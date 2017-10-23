@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Meeting Secretary Login{% endblock %}</title>
+  <link href="{% static "css/main.css" %}" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <h1>Meeting Secretary</h1>
+    {% if user.is_authenticated %}
+      Hi {{ user.username }}!
+      <a href="{% url 'logout' %}">logout</a>
+    {% else %}
+      <a href="{% url 'login' %}">login</a>
+      <a href="{% url 'signup' %}">signup</a>
+    {% endif %}
+  </header>
+  <hr>
+  <main class="main">
+	<div class="center">
+      {% block content %}
+          hello
+      {% endblock %}
+	</div>
+  </main>
+  <hr>
+  <footer>
+	  {% block footer %}
+	  {% endblock %}
+  </footer>
+</body>
+</html>

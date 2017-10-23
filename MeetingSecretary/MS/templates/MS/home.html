@@ -1,0 +1,24 @@
+{% extends 'MS/base.html' %}
+
+{% block title %}Personal Home{% endblock %}
+
+{% block content %}
+  {% if user.is_authenticated %}
+  <h2>Personal Profile</h2>
+		name:       {{user.username}} <br>
+		first name: {{user.first_name}} <br>
+	    last name:  {{user.last_name}} <br>
+	    email:      {{user.email}} <br> 
+    {% if from_change == "success" %}
+		<br>
+	    <div id="change">Change success!</div>
+    {% endif %}
+  {% else %}
+        You are forbidden to enter this site, please goto /login page to login first
+  {% endif %}
+{% endblock %}
+
+{% block footer %}
+	<a href="/change/password/">change password</a><br>
+	<a href="/change/information/">change information</a><br>
+{% endblock %}

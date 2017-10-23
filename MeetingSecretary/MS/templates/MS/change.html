@@ -1,0 +1,50 @@
+{% extends 'MS/base.html' %}
+
+{% block title %}
+    change
+{% endblock %}
+
+{% block content %}
+  {% if user.is_authenticated %}
+    {% if type == "password" %}
+        <form action="/change/password/" method="post">
+            {% csrf_token %}
+            <label for="first_password">Reset Password: </label>
+            <input id="first_password" type="password" name="first_password"> <br><br><br>
+            <label for="second_password">Reinput Password: </label>
+            <input id="second_password" type="password" name="second_password">
+            <br><br><br>
+            <input type="submit" value="OK">
+        </form>
+        {% if warn == 'password_diff' %}
+            <br>
+            <p class="change_warn">Two passwords are different! Please input again</p>
+        {% elif warn == 'password_empty' %}
+            <br>
+            <p class="change_warn">Password cannot be empty!</p>
+        {% endif %}
+    {% elif type == "information" %}
+        <form action="/change/information/" method="post">
+            {% csrf_token %}
+            <label for="first_name">First Name </label>
+            <input id="first_name" type="text" name="first_name"> <br><br><br>
+            <label for="last_name">Last Name </label>
+            <input id="last_name" type="text" name="last_name"> <br><br><br>
+            <label for="email">Email </label>
+            <input id="email" type="email" name="email">
+            <br><br><br>
+            <input type="submit" value="OK">
+        </form>
+        {% if warn == 'email_empty' %}
+            <br>
+            <p class="change_warn">Email cannot be empty!</p>
+        {% endif %}
+     {% endif %}
+  {% else %}
+    You are forbidden for this page! Please login first
+  {% endif %}
+        
+{% endblock %}
+{% block footer %}
+  <a href="{% url 'home' %}">home</a>
+{% endblock %}
