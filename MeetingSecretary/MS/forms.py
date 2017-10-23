@@ -11,3 +11,7 @@ class SignUpForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2', )
+
+
+class CreateGroupForm(forms.Form):
+	group_name = forms.CharField(label = 'Group Name:', max_length=30, help_text='*Required.')

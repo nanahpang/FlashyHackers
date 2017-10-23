@@ -27,4 +27,5 @@ urlpatterns = [
     url(r'^change/(?P<type>[a-z]+)/$', views.change, name='change'),
     url(r'^admin/', admin.site.urls),
     url(r'^test/$', views.test, name='test'),
+    url(r'^creategroup/$', views.creategroup, name='creategroup'),
 ]

@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 # Create your views here.
 from django.http import HttpResponse
-from MS.forms import SignUpForm
+from MS.forms import SignUpForm, CreateGroupForm
 
 def signup(request):
     form = SignUpForm(request.POST)
@@ -49,3 +49,14 @@ def change(request, type):
             request.user.email = email
             request.user.save()
     return render(request, 'MS/home.html', {'from_change': 'success'})
+
+def creategroup(request):
+    if request.method == 'POST':
+        form = CreateGroupForm(request.POST)
+        if form.is_valid():
+            form.save()
+            groupname = form.cleaned_data.get('groupname')
+    else:
+        form = CreateGroupForm()
+    #if request.method == 'GET':
+    return render(request,'MS/creategroup.html',{'form': form})
