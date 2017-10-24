@@ -2,9 +2,6 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.contrib.auth.models import User
 
-<<<<<<< HEAD
-
-=======
 # Create your models here.
 
 class Group(models.Model):
@@ -19,4 +16,4 @@ class Membership(models.Model):
 	user = models.ForeignKey(User)
 	group = models.ForeignKey(Group)
 	date_joined = models.DateField()
->>>>>>> 91e88fda8420a77dd1feaa050b1a871f3dedce77
+

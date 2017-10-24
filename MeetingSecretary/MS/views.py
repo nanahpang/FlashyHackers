@@ -67,10 +67,10 @@ def creategroup(request):
     #if request.method == 'GET':
     return render(request,'MS/creategroup.html',{'form': form})
 
-<<<<<<< HEAD
+
 def calendar(request):
-    return HttpResponse("Calendar home page")
-=======
+    return render(request, "MS/calendar_view.html")
+
 def viewgroups(request):
     return render(request,'MS/viewgroups.html')
->>>>>>> 91e88fda8420a77dd1feaa050b1a871f3dedce77
+
