@@ -5,8 +5,8 @@ from django.contrib.auth.models import User
 
 # Create your views here.
 from django.http import HttpResponse
-from MS.forms import SignUpForm, CreateGroupForm
-
+from MS.forms import SignUpForm, CreatePartialGroupForm
+from MS.models import Group, Membership
 def signup(request):
     form = SignUpForm(request.POST)
     if form.is_valid():
@@ -52,11 +52,18 @@ def change(request, type):
 
 def creategroup(request):
     if request.method == 'POST':
-        form = CreateGroupForm(request.POST)
+        form = CreatePartialGroupForm(request.POST)
         if form.is_valid():
-            form.save()
-            groupname = form.cleaned_data.get('groupname')
+            group = form.save(commit=False)
+            #groupname = form.cleaned_data.get('groupname')
+            group.admin_name = request.user.username
+            #group = Group(group_name=groupname, admin_name = adminname)
+            group.save()
+            print(group) 
     else:
-        form = CreateGroupForm()
+        form = CreatePartialGroupForm()
     #if request.method == 'GET':
     return render(request,'MS/creategroup.html',{'form': form})
+
+def viewgroups(request):
+    return render(request,'MS/viewgroups.html')

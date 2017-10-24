@@ -13,7 +13,8 @@
 		<br>
 	    <div id="change">Change success!</div>
     {% endif %}
-   <a href="{% url 'creategroup' %}">create a group</a><br>
+   <a href="{% url 'creategroup' %}">create a group</a>
+   <a href="{% url 'viewgroups' %}">view groups</a><br>
   {% else %}
         You are forbidden to enter this site, please goto /login page to login first
   {% endif %}

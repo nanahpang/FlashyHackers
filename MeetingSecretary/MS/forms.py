@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User,Group
 
 
 class SignUpForm(UserCreationForm):
@@ -13,5 +13,9 @@ class SignUpForm(UserCreationForm):
         fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2', )
 
 
-class CreateGroupForm(forms.Form):
-	group_name = forms.CharField(label = 'Group Name:', max_length=30, help_text='*Required.')
+class CreatePartialGroupForm(forms.ModelForm):
+    group_name = forms.CharField(label = 'Group Name:', max_length=30, help_text='*Required.')
+    #admin_name = forms.CharField(label = 'Admin Name:', max_length=30, help_text='*Required.')
+    class Meta:
+        model = Group
+        exclude = ['admin_name']
