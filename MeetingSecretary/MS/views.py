@@ -2,25 +2,12 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
+# from oauth2client.contrib.django_orm import Storage
+# from MS.models import CredentialsModel
 
 # Create your views here.
 from django.http import HttpResponse
 from MS.forms import SignUpForm, CreateGroupForm
-
-# libraries for calendar API
-from django.db import models
-from oauth2client.contrib.django_orm import FlowField
-from oauth2client.contrib.django_orm import CredentialsField
-
-class FlowModel(models.Model):
-  id = models.ForeignKey(User, primary_key=True)
-  flow = FlowField()
-
-class CredentialsModel(models.Model):
-  id = models.ForeignKey(User, primary_key=True)
-  credential = CredentialsField()
-
-
 
 def signup(request):
     form = SignUpForm(request.POST)
@@ -75,3 +62,6 @@ def creategroup(request):
         form = CreateGroupForm()
     #if request.method == 'GET':
     return render(request,'MS/creategroup.html',{'form': form})
+
+def calendar(request):
+    return HttpResponse("Calendar home page")

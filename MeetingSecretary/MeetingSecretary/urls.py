@@ -28,4 +28,5 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^test/$', views.test, name='test'),
     url(r'^creategroup/$', views.creategroup, name='creategroup'),
+    url(r'^calendar/$', views.calendar, name='calendar'),
 ]
