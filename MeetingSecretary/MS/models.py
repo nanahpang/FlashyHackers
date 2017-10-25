@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -15,3 +16,4 @@ class Membership(models.Model):
 	user = models.ForeignKey(User)
 	group = models.ForeignKey(Group)
 	date_joined = models.DateField()
+

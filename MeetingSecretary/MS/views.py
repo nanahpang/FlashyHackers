@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
+# from oauth2client.contrib.django_orm import Storage
+# from MS.models import CredentialsModel
 
 # Create your views here.
 from django.http import HttpResponse
@@ -67,5 +69,11 @@ def creategroup(request):
     #if request.method == 'GET':
     return render(request,'MS/creategroup.html',{'form': form})
 
+
+def calendar(request):
+    print("haha")
+    return render(request, "MS/fullcalendar.html")
+
 def viewgroups(request):
     return render(request,'MS/viewgroups.html')
+
