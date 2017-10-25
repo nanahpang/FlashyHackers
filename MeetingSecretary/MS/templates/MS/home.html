@@ -13,9 +13,9 @@
 		<br>
 	    <div id="change">Change success!</div>
     {% endif %}
-    <a href="{% url 'calendar' %}">view my calendar</a>
-   <a href="{% url 'creategroup' %}">create a group</a>
-   <a href="{% url 'viewgroups' %}">view groups</a><br>
+    <ul><a href="{% url 'calendar' %}">view my calendar</a></ul>
+   <ul><a href="{% url 'creategroup' %}">create a group</a></ul>
+   <ul><a href="{% url 'viewgroups' %}">view groups</a><br></ul>
   {% else %}
         You are forbidden to enter this site, please goto /login page to login first
   {% endif %}

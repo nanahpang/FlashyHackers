@@ -69,7 +69,8 @@ def creategroup(request):
 
 
 def calendar(request):
-    return render(request, "MS/calendar_view.html")
+    print("haha")
+    return render(request, "MS/fullcalendar.html")
 
 def viewgroups(request):
     return render(request,'MS/viewgroups.html')
