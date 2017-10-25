@@ -57,9 +57,11 @@ def creategroup(request):
             group = form.save(commit=False)
             #groupname = form.cleaned_data.get('groupname')
             group.admin_name = request.user.username
+            group.group_name = form.cleaned_data.get('group_name')
             #group = Group(group_name=groupname, admin_name = adminname)
             group.save()
-            print(group) 
+            print(group.group_name)
+
     else:
         form = CreatePartialGroupForm()
     #if request.method == 'GET':
