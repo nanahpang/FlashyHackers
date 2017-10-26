@@ -16,26 +16,4 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='Group',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('group_name', models.CharField(max_length=30)),
-                ('admin_name', models.CharField(max_length=30)),
-            ],
-        ),
-        migrations.CreateModel(
-            name='Membership',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date_joined', models.DateField()),
-                ('group', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='MS.Group')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-            ],
-        ),
-        migrations.AddField(
-            model_name='group',
-            name='members',
-            field=models.ManyToManyField(through='MS.Membership', to=settings.AUTH_USER_MODEL),
-        ),
     ]

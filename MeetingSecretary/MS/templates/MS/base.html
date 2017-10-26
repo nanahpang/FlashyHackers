@@ -6,13 +6,20 @@
   <title>{% block title %}Meeting Secretary Login{% endblock %}</title>
 
   <link href="{% static 'css/main.css' %}" rel="stylesheet">
+  <script src="http://ajax.aspnetcdn.com/ajax/jquery/jquery-3.2.0.min.js"></script>
 </head>
 <body>
   <header>
     <h1>Meeting Secretary</h1>
+<!-- print group created messages -->
+    {% for message in messages %}
+      <p class="{{ message.tags }}">{{ message }}</p>
+    {% endfor %}
+
     {% if user.is_authenticated %}
       Hi {{ user.username }}!
       <a href="{% url 'logout' %}">logout</a>
+
     {% else %}
       <a href="{% url 'login' %}">login</a>
       <a href="{% url 'signup' %}">signup</a>

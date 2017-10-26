@@ -39,7 +39,9 @@ urlpatterns = [
     url(r'^creategroup/$', views.creategroup, name='creategroup'),
     url(r'^calendar/$', views.calendar, name='calendar'),
     url(r'^viewgroups/$',views.viewgroups, name='viewgroups'),
-
+    url(r'^ajax/showgroup/', views.showgroup, name='showgroup'),
+    url(r'^groups/([a-z]*)', TemplateView.as_view(template_name='MS/groups.html'), name='groups'),
+    #url(r'^mygroups/$', views.mygroups, name='mygroups'),
     # url(r'^fullcalendar/', TemplateView.as_view(template_name="Calendar/fullcalendar.html"), name='fullcalendar'),
     url(r'^schedule/', include('schedule.urls'), name='scheduler'),
 
@@ -48,10 +50,10 @@ urlpatterns = [
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     # Uncomment the next line to enable the admin:
-    url(r'^admin/', include(admin.site.urls)),
+    #url(r'^admin/', include(admin.site.urls)),
 ]
-if settings.DEBUG:
-    import debug_toolbar
-    urlpatterns += [
-        url(r'^__debug__/', include(debug_toolbar.urls)),
-    ]
+#if settings.DEBUG:
+#    import debug_toolbar
+#    urlpatterns += [
+#        url(r'^__debug__/', include(debug_toolbar.urls)),
+#    ]

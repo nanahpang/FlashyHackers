@@ -2,13 +2,16 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
+from django.contrib import messages
 # from oauth2client.contrib.django_orm import Storage
 # from MS.models import CredentialsModel
 
 # Create your views here.
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from MS.forms import SignUpForm, CreatePartialGroupForm
 from MS.models import Group, Membership
+from django.core import serializers
+import simplejson as json
 def signup(request):
     form = SignUpForm(request.POST)
     if form.is_valid():
@@ -52,6 +55,8 @@ def change(request, type):
             request.user.save()
     return render(request, 'MS/home.html', {'from_change': 'success'})
 
+#group management part
+
 def creategroup(request):
     if request.method == 'POST':
         form = CreatePartialGroupForm(request.POST)
@@ -62,18 +67,38 @@ def creategroup(request):
             group.group_name = form.cleaned_data.get('group_name')
             #group = Group(group_name=groupname, admin_name = adminname)
             group.save()
-            print(group.group_name)
-
+            #alert("%s is created by %s" %(group.group_name, group.admin_name))
+            messages.success(request,'%s is created by %s' %(group.group_name, group.admin_name))
+            return redirect('home')
     else:
         form = CreatePartialGroupForm()
     #if request.method == 'GET':
     return render(request,'MS/creategroup.html',{'form': form})
 
+def viewgroups(request):
+    if request.method == 'GET':
+        all_entries = Group.objects.filter(admin_name=request.user.username)
+        return render(request,'MS/viewgroups.html', {'data' : all_entries})
 
+
+def showgroup(request):
+    group_name = request.POST.get('group_name')
+    print(group_name)
+    data = Group.objects.filter(group_name = group_name)
+    results = []
+    for item in data:
+        data_json = item.group_name
+        data_json = item.admin_name
+        results.append(data_json)
+    res = json.dumps(results)
+    mimetype = 'application/json'
+    return HttpResponse(res, mimetype)
+
+#calendar management
 def calendar(request):
     print("haha")
     return render(request, "MS/fullcalendar.html")
 
-def viewgroups(request):
-    return render(request,'MS/viewgroups.html')
+
+
 

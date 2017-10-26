@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 # Create your models here.
 
 class Group(models.Model):
-	group_name = models.CharField(max_length = 30)
+	group_name = models.CharField(max_length = 30, primary_key=True)
 	admin_name = models.CharField(max_length = 30)
 	members = models.ManyToManyField(User, through = 'Membership')
 

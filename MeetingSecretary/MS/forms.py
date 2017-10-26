@@ -19,4 +19,4 @@ class CreatePartialGroupForm(forms.ModelForm):
     #admin_name = forms.CharField(label = 'Admin Name:', max_length=30, help_text='*Required.')
     class Meta:
         model = Group
-        exclude = ['admin_name']
+        exclude = ['admin_name', 'members']
