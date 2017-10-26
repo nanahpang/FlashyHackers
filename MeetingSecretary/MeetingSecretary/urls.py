@@ -19,6 +19,15 @@ from MS import views
 from django.contrib.auth import views as auth_views
 from django.views.generic.base import TemplateView
 
+from django.views.generic import TemplateView
+from django.conf.urls import include, url
+
+from django.conf import settings
+
+
+admin.autodiscover()
+
+
 urlpatterns = [
     url(r'^$', TemplateView.as_view(template_name='MS/home.html'), name='home'),
     url(r'^signup/', views.signup, name='signup'),
@@ -27,4 +36,24 @@ urlpatterns = [
     url(r'^change/(?P<type>[a-z]+)/$', views.change, name='change'),
     url(r'^admin/', admin.site.urls),
     url(r'^test/$', views.test, name='test'),
+    url(r'^creategroup/$', views.creategroup, name='creategroup'),
+    url(r'^calendar/$', views.calendar, name='calendar'),
+    url(r'^viewgroups/$',views.viewgroups, name='viewgroups'),
+    url(r'^ajax/showgroup/', views.showgroup, name='showgroup'),
+    url(r'^groups/([a-z]*)', TemplateView.as_view(template_name='MS/groups.html'), name='groups'),
+    #url(r'^mygroups/$', views.mygroups, name='mygroups'),
+    # url(r'^fullcalendar/', TemplateView.as_view(template_name="Calendar/fullcalendar.html"), name='fullcalendar'),
+    url(r'^schedule/', include('schedule.urls'), name='scheduler'),
+
+    # Uncomment the admin/doc line below and add 'django.contrib.admindocs'
+    # to INSTALLED_APPS to enable admin documentation:
+    url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
+
+    # Uncomment the next line to enable the admin:
+    #url(r'^admin/', include(admin.site.urls)),
 ]
+#if settings.DEBUG:
+#    import debug_toolbar
+#    urlpatterns += [
+#        url(r'^__debug__/', include(debug_toolbar.urls)),
+#    ]

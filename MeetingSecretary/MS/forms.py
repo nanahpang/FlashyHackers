@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from MS.models import Group
 
 
 class SignUpForm(UserCreationForm):
@@ -11,3 +12,11 @@ class SignUpForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2', )
+
+
+class CreatePartialGroupForm(forms.ModelForm):
+    group_name = forms.CharField(label = 'Group Name:', max_length=30, help_text='*Required. Only alphabets and numbers accepted')
+    #admin_name = forms.CharField(label = 'Admin Name:', max_length=30, help_text='*Required.')
+    class Meta:
+        model = Group
+        exclude = ['admin_name', 'members']

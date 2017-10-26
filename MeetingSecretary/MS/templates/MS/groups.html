@@ -1,0 +1,46 @@
+{% extends 'MS/base.html' %}
+{% load i18n staticfiles %}
+
+{% block title %}Groups{% endblock %}
+{% block extra_head %}
+<script src="http://ajax.aspnetcdn.com/ajax/jquery/jquery-3.2.0.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<h2></h2>
+  <h3>User Information</h3>
+name:       {{user.username}} <br>
+first name: {{user.first_name}} <br>
+last name:  {{user.last_name}} <br>
+email:      {{user.email}} <br>
+<p>Members: </p>
+<ol>
+</ol>
+<script>
+$(document).ready(function(){
+		var url = window.location.href;
+		var index = url.indexOf("groups") + 7;
+		var group_name = url.substring(index);
+		$("h2").append("<h2>" + group_name + "</h2>");
+		$.ajax({
+			type: 'POST',
+			url: '/ajax/showgroup/',
+			data: {group_name, csrfmiddlewaretoken:'{{ csrf_token}}'},
+			dataType: 'json',
+			success: function(data){
+				var count = data.length;
+				for (var i = 0; i < count; ++i)
+					$("ol").append("<li>" + data[i]+ "</li>");
+					//alert(data[i]['group_name']);
+			}
+		});
+
+	});
+
+
+</script>
+{% endblock %}
+
+{% block footer%}
+<a href="{% url 'home' %}">home</a>
+{% endblock %}

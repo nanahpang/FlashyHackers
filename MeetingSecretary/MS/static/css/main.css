@@ -14,6 +14,21 @@
     color: red;
     font-weight:normal;
 }
+
+/* Messages */
+.success, .error {
+  padding: 1em 0 1em 3em;
+}
+
+.success {
+  background-color: #ddffdd;
+  border: thin solid green;
+}
+
+.error {
+  background-color: #fbd9d8;
+  border: thin solid red;
+}
 /*
 a { 
     color:#00abff;
