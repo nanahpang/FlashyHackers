@@ -1,0 +1,55 @@
+{% extends 'MS/base.html' %}
+{% load i18n staticfiles %}
+
+{% block title %}user's group{% endblock %}
+
+{% block content %}
+
+  <h2>My Groups</h2>
+  <h3>User Information</h3>
+name:       {{user.username}} <br>
+first name: {{user.first_name}} <br>
+last name:  {{user.last_name}} <br>
+email:      {{user.email}} <br> 
+<h3>As Admin</h3>
+<ol></ol>
+
+<h3>As Member</h3>
+<ol></ol>
+<script>
+    function opennew(groupname){		
+		  window.open('/groups/' + groupname);
+	  }
+  </script>
+<script>
+  $(document).ready(function(){
+    var username = '{{user.username}}';
+    $.ajax({
+      type: 'POST',
+      url: '/ajax/viewadmingroups/',
+      data: {username, csrfmiddlewaretoken:'{{ csrf_token}}'},
+      dataType: 'json',
+      success: function(data){
+        var admin_count = data['admin'].length;
+        var admin = data['admin'];
+        for (var i = 0; i < admin_count; ++i) {
+          $("ol").append("<li>" + admin[i]+ "</li>");
+          $("ol").append("<button type='button'" + "onclick = opennew('" + admin[i] + "')" + ">view</button>");      
+        }
+        var member_count = data['member'].length;
+        var member = data['member'];
+        for (var i = 0; i < member_count; ++i) {
+          $("ol").append("<li>" + member[i]+ "</li>");
+          $("ol").append("<button type='button'" + "onclick = opennew('" + member[i] + "')" + ">view</button>");      
+        }
+      }
+    });
+
+  });
+</script>
+
+{% endblock %}
+
+{% block footer%}
+<a href="{% url 'home' %}">home</a>
+{% endblock %}

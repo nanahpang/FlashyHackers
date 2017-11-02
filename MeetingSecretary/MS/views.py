@@ -63,36 +63,69 @@ def creategroup(request):
         if form.is_valid():
             group = form.save(commit=False)
             #groupname = form.cleaned_data.get('groupname')
-            group.admin_name = request.user.username
-            group.group_name = form.cleaned_data.get('group_name')
+            group.admin = request.user.username
+            group.name = form.cleaned_data.get('group_name')
             #group = Group(group_name=groupname, admin_name = adminname)
             group.save()
+            group = Group.objects.get(name =  name)
+            member = User.objects.get(username = request.user.username)
+            p = Membership(group = group, member = member)
+            p.save()
+
             #alert("%s is created by %s" %(group.group_name, group.admin_name))
-            messages.success(request,'%s is created by %s' %(group.group_name, group.admin_name))
+            messages.success(request,'%s is created by %s' %(group.name, group.admin))
             return redirect('home')
     else:
         form = CreatePartialGroupForm()
     #if request.method == 'GET':
     return render(request,'MS/creategroup.html',{'form': form})
 
-def viewgroups(request):
-    if request.method == 'GET':
-        all_entries = Group.objects.filter(admin_name=request.user.username)
-        return render(request,'MS/viewgroups.html', {'data' : all_entries})
+def viewadmingroups(request):
+    username = request.POST.get('username')
+    admin_entries = Group.objects.filter(admin=username)
+    user = User.objects.get(username = username)
+    member_entries = Membership.objects.filter(member=user)
+    admin_results = []
+    member_results = []
+    for item in admin_entries:
+        data_json = item.name
+        admin_results.append(data_json)
+    for item in member_entries:
+        data_json = item.group.name
+        member_results.append(data_json)
+    res = {'admin': admin_results, 'member':member_results}
+    res = json.dumps(res)
+    mimetype = 'application/json'
+    return HttpResponse(res, mimetype)
 
 
 def showgroup(request):
     group_name = request.POST.get('group_name')
-    print(group_name)
-    data = Group.objects.filter(group_name = group_name)
+    data = Membership.objects.filter(group = group_name)
+    admin = Group.objects.get(name = group_name).admin
     results = []
+    print(results)
     for item in data:
-        data_json = item.group_name
-        data_json = item.admin_name
+        data_json = item.group
+        data_json = item.member.username
         results.append(data_json)
-    res = json.dumps(results)
+    res = {'admin' : admin, 'member' : results}
+    print(res)
+    res = json.dumps(res)
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
+
+def addnewmember(request):
+    group_name = request.POST.get('group_name')
+    member_id = request.POST.get('memberid')
+    group = Group.objects.get(name = group_name)
+    member = User.objects.get(username = member_id)
+    p = Membership(group = group, member = member)
+    p.save()
+    result = 'true'
+    result = json.dumps(result)
+    mimetype = 'application/json'
+    return HttpResponse(result, mimetype)
 
 #calendar management
 def calendar(request):
