@@ -11,7 +11,9 @@ from django.http import HttpResponse, JsonResponse
 from MS.forms import SignUpForm, CreatePartialGroupForm
 from MS.models import Group, Membership
 from django.core import serializers
-import simplejson as json
+try: import simplejson as json
+except ImportError: import json
+
 def signup(request):
     form = SignUpForm(request.POST)
     if form.is_valid():
@@ -96,7 +98,6 @@ def showgroup(request):
 
 #calendar management
 def calendar(request):
-    print("haha")
     return render(request, "MS/fullcalendar.html")
 
 
