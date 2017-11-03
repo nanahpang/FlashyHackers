@@ -43,13 +43,12 @@ $(document).ready(function(){
 				$("h4").append(data['admin']);
 				var count = data['member'].length;
 				for (var i = 0; i < count; ++i)
-					$("ol").append("<li>" + data['member'][i]+ 
-					"<button type='button'" + "onclick = deletemember('" + data[i] + "')" 
-					+ "value = " + "'"+ data[i] + "'"
-					+ "id = " + "'member"+ data[i] + "'"
-					+">delete</button>"+"</li>");
-				//删除还没实现 想看看有没有合适的前端框架比较直接可以传递这个数据
-					//alert(data[i]['group_name']);
+					$("ol").append("<li>" + data['member'][i]+ "</li>");
+					//"<button type='button'" + "onclick = deletemember('" + data[i] + "')" 
+					//+ "value = " + "'"+ data[i] + "'"
+					//+ "id = " + "'member"+ data[i] + "'"
+					//+">delete</button>"+"</li>");
+
 			}
 		});
 	});
@@ -61,17 +60,20 @@ $(document).ready(function(){
 		$("#addnewmember").submit(function(event){
 			event.preventDefault();
 			var memberid = document.getElementById('newmembername').value;
+			var operationuser = '{{ user.username }}'
 			var url = window.location.href;
 			var index = url.indexOf("groups") + 7;
 			var group_name = url.substring(index);
-			alert(memberid);
 			$.ajax({
 				type: "POST",
 				url: "/ajax/addnewmember/",
-				data: {memberid,group_name,csrfmiddlewaretoken: '{{ csrf_token }}'},
+				data: {memberid,group_name,operationuser, csrfmiddlewaretoken: '{{ csrf_token }}'},
 				dataType:'json',
 				success:function(data){
-					alert("User "+ memberid + " has been added to group " + group_name + "! Please refresh the page to see your group.");
+					if(data['valid'] == 'true')
+						alert("User "+ memberid + " has been added to group " + group_name + "! Please refresh the page to see your group.");
+          			else 
+            			alert("You have no authorization to add people to this group.");					
 				}
 			});
 		});
@@ -79,16 +81,20 @@ $(document).ready(function(){
 		$("#deletemember").submit(function(event){
 			event.preventDefault();
 			var memberid = document.getElementById('deletename').value;
+			var operationuser = '{{ user.username }}'
 			var url = window.location.href;
 			var index = url.indexOf("groups") + 7;
 			var group_name = url.substring(index);
 			$.ajax({
 				type: "POST",
 				url: "/ajax/deletemember/",
-				data: {memberid,group_name,csrfmiddlewaretoken: '{{ csrf_token }}'},
+				data: {memberid,group_name,operationuser,csrfmiddlewaretoken: '{{ csrf_token }}'},
 				dataType:'json',
-				success:function(){
-					alert("User "+ memberid + " has been removed from group " + group_name + "! Please refresh the page to see your group.");
+				success:function(data){
+					if(data['valid'] == 'true')
+						alert("User "+ memberid + " has been removed from group " + group_name + "! Please refresh the page to see your group.");
+					else
+						alert("You have no authorization to delete people to this group.")
 				}
 			});
 		});

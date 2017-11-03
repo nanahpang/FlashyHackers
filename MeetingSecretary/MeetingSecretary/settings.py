@@ -96,9 +96,12 @@ WSGI_APPLICATION = 'MeetingSecretary.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'MeetingSecretary',    ## 数据库名称
+        'USER': 'root',
+        'PASSWORD': '123456',    ## 安装 mysql 数据库时，输入的 root 用户的密码
+        'HOST': '',
+    } 
 }
 
 
