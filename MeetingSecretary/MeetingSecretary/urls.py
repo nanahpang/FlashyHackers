@@ -43,6 +43,8 @@ urlpatterns = [
     url(r'^ajax/showgroup/', views.showgroup, name='showgroup'),
     url(r'^groups/([a-z]*)', TemplateView.as_view(template_name='MS/groups.html'), name='groups'),
     url(r'^ajax/addnewmember/', views.addnewmember, name='addnewmember'),
+    url(r'^ajax/deletemember/', views.deletemember, name='deletemember'),
+    url(r'^ajax/deletegroup/', views.deletegroup, name='deletegroup'),
     #url(r'^mygroups/$', views.mygroups, name='mygroups'),
     # url(r'^fullcalendar/', TemplateView.as_view(template_name="Calendar/fullcalendar.html"), name='fullcalendar'),
     url(r'^schedule/', include('schedule.urls'), name='scheduler'),

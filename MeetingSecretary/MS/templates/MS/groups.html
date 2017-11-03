@@ -14,16 +14,20 @@ first name: {{user.first_name}} <br>
 last name:  {{user.last_name}} <br>
 email:      {{user.email}} <br>
 
-<p>Administrator: </p>
+<h4>Administrator: </h4>
 <p>Members: </p>
 <ol>
 </ol>
 <form id = "addnewmember" method = "POST">
-		{% csrf_token %}
-	<input type="text" id = "newmembername">
-	<input type="submit" value = "add a member">
-	</form>
-	   
+	{% csrf_token %}
+<input type="text" id = "newmembername">
+<input type="submit" value = "add a member">
+</form>
+<form id = "deletemember" method = "POST">
+	{% csrf_token %}
+<input type="text" id = "deletename">
+<input type="submit" value = "delete a member">
+</form>   
 <script>
 $(document).ready(function(){
 		var url = window.location.href;
@@ -36,7 +40,7 @@ $(document).ready(function(){
 			data: {group_name, csrfmiddlewaretoken:'{{ csrf_token}}'},
 			dataType: 'json',
 			success: function(data){
-				$("p").append(data['admin']);
+				$("h4").append(data['admin']);
 				var count = data['member'].length;
 				for (var i = 0; i < count; ++i)
 					$("ol").append("<li>" + data['member'][i]+ 
@@ -55,24 +59,39 @@ $(document).ready(function(){
 
 <script>
 		$("#addnewmember").submit(function(event){
-		event.preventDefault();
-		var memberid = document.getElementById('newmembername').value;
-		var url = window.location.href;
-		var index = url.indexOf("groups") + 7;
-		var group_name = url.substring(index);
-		alert(memberid);
-		$.ajax({
-			type: "POST",
-			url: "/ajax/addnewmember/",
-			data: {memberid,group_name,csrfmiddlewaretoken: '{{ csrf_token }}'},
-            dataType:'json',
-			success:function(data){
-				alert(data);
-			}
+			event.preventDefault();
+			var memberid = document.getElementById('newmembername').value;
+			var url = window.location.href;
+			var index = url.indexOf("groups") + 7;
+			var group_name = url.substring(index);
+			alert(memberid);
+			$.ajax({
+				type: "POST",
+				url: "/ajax/addnewmember/",
+				data: {memberid,group_name,csrfmiddlewaretoken: '{{ csrf_token }}'},
+				dataType:'json',
+				success:function(data){
+					alert("User "+ memberid + " has been added to group " + group_name + "! Please refresh the page to see your group.");
+				}
+			});
 		});
 
-
-	});
+		$("#deletemember").submit(function(event){
+			event.preventDefault();
+			var memberid = document.getElementById('deletename').value;
+			var url = window.location.href;
+			var index = url.indexOf("groups") + 7;
+			var group_name = url.substring(index);
+			$.ajax({
+				type: "POST",
+				url: "/ajax/deletemember/",
+				data: {memberid,group_name,csrfmiddlewaretoken: '{{ csrf_token }}'},
+				dataType:'json',
+				success:function(){
+					alert("User "+ memberid + " has been removed from group " + group_name + "! Please refresh the page to see your group.");
+				}
+			});
+		});
 </script>
 {% endblock %}
 

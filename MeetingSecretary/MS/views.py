@@ -94,6 +94,7 @@ def viewadmingroups(request):
         data_json = item.group.name
         member_results.append(data_json)
     res = {'admin': admin_results, 'member':member_results}
+    print(res)
     res = json.dumps(res)
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
@@ -115,6 +116,24 @@ def showgroup(request):
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
 
+def deletegroup(request):
+    group_name = request.POST.get('groupid')
+    operationuser = request.POST.get('operationuser')
+    print(group_name)
+    q = Group.objects.get(name = group_name)
+    if q.admin == operationuser :
+         p  = Membership.objects.filter(group = group_name)
+         p.delete()
+         q.delete()
+         result = 'true'
+    else :
+         result = 'false'
+    res = {'valid': result}
+    res = json.dumps(res)
+    mimetype = 'application/json'
+    return HttpResponse(res, mimetype)    
+    
+
 def addnewmember(request):
     group_name = request.POST.get('group_name')
     member_id = request.POST.get('memberid')
@@ -122,6 +141,18 @@ def addnewmember(request):
     member = User.objects.get(username = member_id)
     p = Membership(group = group, member = member)
     p.save()
+    result = 'true'
+    result = json.dumps(result)
+    mimetype = 'application/json'
+    return HttpResponse(result, mimetype)
+
+def deletemember(request):
+    group_name = request.POST.get('group_name')
+    member_id = request.POST.get('memberid')
+    group = Group.objects.get(name = group_name)
+    member = User.objects.get(username = member_id)
+    p = Membership.objects.get(group = group_name, member = member)
+    p.delete()
     result = 'true'
     result = json.dumps(result)
     mimetype = 'application/json'
