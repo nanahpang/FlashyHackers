@@ -64,10 +64,10 @@ def creategroup(request):
             group = form.save(commit=False)
             #groupname = form.cleaned_data.get('groupname')
             group.admin = request.user.username
-            group.name = form.cleaned_data.get('group_name')
+            group.name = form.cleaned_data.get('name')
             #group = Group(group_name=groupname, admin_name = adminname)
             group.save()
-            group = Group.objects.get(name =  name)
+            group = Group.objects.get(name =  group.name)
             member = User.objects.get(username = request.user.username)
             p = Membership(group = group, member = member)
             p.save()

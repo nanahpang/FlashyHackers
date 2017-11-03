@@ -12,7 +12,7 @@ first name: {{user.first_name}} <br>
 last name:  {{user.last_name}} <br>
 email:      {{user.email}} <br> 
 <h3>As Admin</h3>
-<ol></ol>
+<ol id="admin"></ol>
 
 <h3>As Member</h3>
 <ol></ol>
@@ -33,8 +33,8 @@ email:      {{user.email}} <br>
         var admin_count = data['admin'].length;
         var admin = data['admin'];
         for (var i = 0; i < admin_count; ++i) {
-          $("ol").append("<li>" + admin[i]+ "</li>");
-          $("ol").append("<button type='button'" + "onclick = opennew('" + admin[i] + "')" + ">view</button>");      
+          $("admin").append("<li>" + admin[i]+ "</li>");
+          $("admin").append("<button type='button'" + "onclick = opennew('" + admin[i] + "')" + ">view</button>");      
         }
         var member_count = data['member'].length;
         var member = data['member'];

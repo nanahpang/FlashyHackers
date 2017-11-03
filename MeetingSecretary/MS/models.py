@@ -13,4 +13,3 @@ class Group(models.Model):
 class Membership(models.Model):
 	member = models.ForeignKey(User)
 	group = models.ForeignKey(Group)
-
