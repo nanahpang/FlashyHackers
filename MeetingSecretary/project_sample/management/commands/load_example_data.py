@@ -29,7 +29,7 @@ class Command(BaseCommand):
         print("The Example Calendar is created.")
         print("Do we need to install the most common rules?")
         try:
-            rule = Rule.objects.get(name="Daily")
+            rule = Rule.objects.get(name="Monthly")
         except Rule.DoesNotExist:
             print("Need to install the basic rules")
             rule = Rule(frequency="YEARLY", name="Yearly", description="will recur once every Year")
