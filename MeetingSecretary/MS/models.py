@@ -5,7 +5,7 @@ from django.db import models
 
 class Group(models.Model):
 	name = models.CharField(max_length = 30, primary_key=True)
-	admin = models.CharField(max_length = 30)
+	admin = models.ForeignKey(User)
 
 	def __str__(self):
 		return self.name

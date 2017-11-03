@@ -63,9 +63,10 @@ def creategroup(request):
         if form.is_valid():
             group = form.save(commit=False)
             #groupname = form.cleaned_data.get('groupname')
-            group.admin = request.user.username
+            group.admin = request.user
             group.name = form.cleaned_data.get('name')
             #group = Group(group_name=groupname, admin_name = adminname)
+            print(group.admin)
             group.save()
             group = Group.objects.get(name =  group.name)
             member = User.objects.get(username = request.user.username)
@@ -73,7 +74,7 @@ def creategroup(request):
             p.save()
 
             #alert("%s is created by %s" %(group.group_name, group.admin_name))
-            messages.success(request,'%s is created by %s' %(group.name, group.admin))
+            messages.success(request,'%s is created by %s' %(group.name, group.admin.username))
             return redirect('home')
     else:
         form = CreatePartialGroupForm()
@@ -82,8 +83,8 @@ def creategroup(request):
 
 def viewadmingroups(request):
     username = request.POST.get('username')
-    admin_entries = Group.objects.filter(admin=username)
     user = User.objects.get(username = username)
+    admin_entries = Group.objects.filter(admin=user)
     member_entries = Membership.objects.filter(member=user)
     admin_results = []
     member_results = []
@@ -102,7 +103,8 @@ def viewadmingroups(request):
 def showgroup(request):
     group_name = request.POST.get('group_name')
     data = Membership.objects.filter(group = group_name)
-    admin = Group.objects.get(name = group_name).admin
+    admin = Group.objects.get(name = group_name).admin.username
+
     results = []
     for item in data:
         data_json = item.group
@@ -117,7 +119,7 @@ def deletegroup(request):
     group_name = request.POST.get('groupid')
     operationuser = request.POST.get('operationuser')
     q = Group.objects.get(name = group_name)
-    if q.admin == operationuser :
+    if q.admin.username == operationuser :
          p  = Membership.objects.filter(group = group_name)
          p.delete()
          q.delete()
@@ -135,7 +137,7 @@ def addnewmember(request):
     member_id = request.POST.get('memberid')
     operationuser = request.POST.get('operationuser')
     group = Group.objects.get(name = group_name)
-    if group.admin == operationuser :
+    if group.admin.username == operationuser :
         member = User.objects.get(username = member_id)
         p = Membership(group = group, member = member)
         p.save()
@@ -152,7 +154,7 @@ def deletemember(request):
     member_id = request.POST.get('memberid')
     operationuser = request.POST.get('operationuser')
     group = Group.objects.get(name = group_name)
-    if group.admin == operationuser :
+    if group.admin.username == operationuser :
         member = User.objects.get(username = member_id)
         p = Membership.objects.get(group = group_name, member = member)
         p.delete()
