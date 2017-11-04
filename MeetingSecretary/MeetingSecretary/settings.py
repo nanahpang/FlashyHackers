@@ -41,8 +41,8 @@ INSTALLED_APPS = [
     'schedule',
     'project_sample',
     'djangobower',
+    'directmessages',
 ]
-
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',

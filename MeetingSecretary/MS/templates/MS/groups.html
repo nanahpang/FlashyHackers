@@ -28,6 +28,13 @@ email:      {{user.email}} <br>
 <input type="text" id = "deletename">
 <input type="submit" value = "delete a member">
 </form>   
+
+<form id = "sendmessages" method = "POST">
+	{% csrf_token %}
+	Member: <input type="text" id = "username">
+	Messages: <input type="text" id = "messages">
+	<input type="submit" value = "send!">
+</form>
 <script>
 $(document).ready(function(){
 		var url = window.location.href;
@@ -95,6 +102,26 @@ $(document).ready(function(){
 						alert("User "+ memberid + " has been removed from group " + group_name + "! Please refresh the page to see your group.");
 					else
 						alert("You have no authorization to delete people to this group.")
+				}
+			});
+		});
+
+		$("#sendmessages").submit(function(event){
+			event.preventDefault();
+			var memberid = document.getElementById('username').value;
+			var messages = document.getElementById('messages').value;
+			var operationuser = '{{ user.username }}'
+			alert(memberid + messages + operationuser);
+			$.ajax({
+				type: "POST",
+				url: "/ajax/sendmessages/",
+				data: {memberid,messages,operationuser,csrfmiddlewaretoken: '{{ csrf_token }}'},
+				dataType:'json',
+				success:function(data){
+					if(data['valid'] == 'true')
+						alert("Message sent!");
+					else
+						alert("Send failed.:(")
 				}
 			});
 		});

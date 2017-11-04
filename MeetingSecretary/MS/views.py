@@ -12,6 +12,7 @@ from MS.forms import SignUpForm, CreatePartialGroupForm
 from MS.models import Group, Membership
 from django.core import serializers
 import simplejson as json
+from directmessages.apps import Inbox
 def signup(request):
     form = SignUpForm(request.POST)
     if form.is_valid():
@@ -163,6 +164,37 @@ def deletemember(request):
         result = 'false'
     res = {'valid': result}
     res = json.dumps(res)
+    mimetype = 'application/json'
+    return HttpResponse(res, mimetype)
+
+
+#for messages
+def sendmessages(request):
+    member_name = request.POST.get('memberid')
+    to_user = User.objects.get(username = member_name)
+    operationuser = request.POST.get('operationuser')
+    from_user = User.objects.get(username = operationuser)
+    messages = request.POST.get('messages')
+    message, status = Inbox.send_message(from_user, to_user, messages)
+    if status == 200:
+        result = 'true'
+    else:
+        result = 'false'
+    res = {'valid': result}
+    res = json.dumps(res)
+    mimetype = 'application/json'
+    return HttpResponse(res, mimetype)
+
+def viewuserinbox(request):
+    username = request.POST.get('username')
+    user = User.objects.get(username = username)
+    messages_entries = Inbox.get_unread_messages(user)
+    print(messages_entries)
+    messages = []
+    for item in messages_entries:
+        print(item.content)
+        messages.append(item.content)
+    res = json.dumps(messages)
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
 
