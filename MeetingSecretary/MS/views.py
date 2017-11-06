@@ -63,18 +63,13 @@ def creategroup(request):
         form = CreatePartialGroupForm(request.POST)
         if form.is_valid():
             group = form.save(commit=False)
-            #groupname = form.cleaned_data.get('groupname')
             group.admin = request.user
             group.name = form.cleaned_data.get('name')
-            #group = Group(group_name=groupname, admin_name = adminname)
-            print(group.admin)
             group.save()
             group = Group.objects.get(name =  group.name)
             member = User.objects.get(username = request.user.username)
             p = Membership(group = group, member = member)
             p.save()
-
-            #alert("%s is created by %s" %(group.group_name, group.admin_name))
             messages.success(request,'%s is created by %s' %(group.name, group.admin.username))
             return redirect('home')
     else:
@@ -137,12 +132,16 @@ def addnewmember(request):
     group_name = request.POST.get('group_name')
     member_id = request.POST.get('memberid')
     operationuser = request.POST.get('operationuser')
+    messages = request.POST.get('messages')
     group = Group.objects.get(name = group_name)
     if group.admin.username == operationuser :
+        from_user = group.admin
         member = User.objects.get(username = member_id)
-        p = Membership(group = group, member = member)
-        p.save()
-        result = 'true'
+        status = sendmessages(from_user, member, messages)
+        if status == True:
+            result = 'true'
+        else:
+            result = 'false'
     else :
         result = 'false'
     res = {'valid': result}
@@ -167,32 +166,37 @@ def deletemember(request):
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
 
-
-#for messages
-def sendmessages(request):
-    member_name = request.POST.get('memberid')
-    to_user = User.objects.get(username = member_name)
-    operationuser = request.POST.get('operationuser')
-    from_user = User.objects.get(username = operationuser)
-    messages = request.POST.get('messages')
-    message, status = Inbox.send_message(from_user, to_user, messages)
-    if status == 200:
-        result = 'true'
-    else:
-        result = 'false'
+def accept(request):
+    group_name = request.POST.get('groupname')
+    username = request.POST.get('username')
+    member = User.objects.get(username = username)
+    group = Group.objects.get(name = group_name)
+    p = Membership(group = group, member = member)
+    p.save()
+    result = 'true'
+    admin = Group.objects.get(name = group_name).admin
+    messages = username+ ' has accepted your invitation of joining group '+ group_name
+    message, status = Inbox.send_message(member, admin, messages)
     res = {'valid': result}
     res = json.dumps(res)
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
 
+#for messages
+def sendmessages(from_user, to_user, messages):
+    message, status = Inbox.send_message(from_user, to_user, messages)
+    if status == 200:
+        result = True
+    else:
+        result = False
+    return result
+
 def viewuserinbox(request):
     username = request.POST.get('username')
     user = User.objects.get(username = username)
     messages_entries = Inbox.get_unread_messages(user)
-    print(messages_entries)
     messages = []
     for item in messages_entries:
-        print(item.content)
         messages.append(item.content)
     res = json.dumps(messages)
     mimetype = 'application/json'

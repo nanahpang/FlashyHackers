@@ -33,11 +33,46 @@ email:      {{user.email}} <br>
       success: function(data){
         var message_count = data.length;
         for (var i = 0; i < message_count; ++i) {
-          $("ol").append("<li>" + data[i]+ "</li>");
+          if (data[i].indexOf('{') > 0) {
+            var invitation = split(data[i]);
+            $("ol").append("<li>User " + invitation[0] + " invites you to group " + invitation[1] + "</li>");
+            $("ol").append("<button type='button'" + "onclick = accept('" + invitation[1] + "')" + ">accept</button>");
+            //$("ol").append("<button type='button'" + "onclick = delete('" + invitation[1] + "')" + ">delete</button>");
+          }
+          else 
+            $("ol").append("<li>"+data[i]+"</li>");
         }
       }
     });
   });
+
+  function accept(groupname) {
+      var username = '{{user.username}}';
+      $.ajax({
+          type: 'POST',
+          url: '/ajax/accept/',
+          data: {username, groupname, csrfmiddlewaretoken:'{{ csrf_token}}'},
+          dataType: 'json',
+          success: function(data){
+            if(data['valid'] == 'true')
+                alert("You have joined group "+ groupname + " successfully! Please refresh to check your groups.");
+          	else 
+            	alert("Something happened. :(");					
+          }
+      });
+  }
+  function split(message){
+      var username_start = message.indexOf("{") + 1;
+      var username_end = message.indexOf("}");
+      var username = message.substring(username_start, username_end);
+      var groupname_start = message.indexOf("[") + 1;
+      var groupname_end = message.indexOf("]");
+      var groupname = message.substring(groupname_start, groupname_end);
+      var invitation = new Array();
+      invitation[0] = username;
+      invitation[1] = groupname;
+      return invitation;
+  }
 </script>
 
 {% endblock %}
