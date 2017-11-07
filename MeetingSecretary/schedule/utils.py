@@ -167,7 +167,7 @@ def check_occurrence_permissions(function):
                 return HttpResponseRedirect(settings.LOGIN_URL)
             # all checks passed
             return function(request, *args, **kwargs)
-        return HttpResponseNotFound('<h1>Page not found</h1>')
+        return HttpResponseNotFound('<h1>Page not found--check_occurrence_permissions</h1>')
     return decorator
 
 
@@ -185,7 +185,7 @@ def check_event_permissions(function):
                 return HttpResponseRedirect(settings.LOGIN_URL)
             # all checks passed
             return function(request, *args, **kwargs)
-        return HttpResponseNotFound('<h1>Page not found</h1>')
+        return HttpResponseNotFound('<h1>Page not found--check_event_permissions</h1>')
     return decorator
 
 
@@ -203,7 +203,7 @@ def check_calendar_permissions(function):
                     return HttpResponseRedirect(settings.LOGIN_URL)
                 # all checks passed
                 return function(request, *args, **kwargs)
-            return HttpResponseNotFound('<h1>Page not found</h1>')
+            return HttpResponseNotFound('<h1>Page not found--check_calendar_permissions</h1>')
         return function(request, *args, **kwargs)
     return decorator
 
