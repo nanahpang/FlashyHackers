@@ -50,7 +50,7 @@ class Command(BaseCommand):
         print("Create some events")
         rule = Rule.objects.get(frequency="WEEKLY")
         data = {
-            'title': 'Exercise',
+            'title': 'TEST: Exercise',
             'start': datetime.datetime(today.year, 11, 3, 8, 0),
             'end': datetime.datetime(today.year, 11, 3, 9, 0),
             'end_recurring_period': datetime.datetime(today.year + 30, 6, 1, 0, 0),
@@ -61,7 +61,7 @@ class Command(BaseCommand):
         event.save()
 
         data = {
-            'title': 'Exercise',
+            'title': 'TEST: Exercise',
             'start': datetime.datetime(today.year, 11, 5, 15, 0),
             'end': datetime.datetime(today.year, 11, 5, 16, 30),
             'end_recurring_period': datetime.datetime(today.year + 20, 6, 1, 0, 0),
@@ -72,7 +72,7 @@ class Command(BaseCommand):
         event.save()
 
         data = {
-            'title': 'Exercise',
+            'title': 'TEST: Exercise',
             'start': datetime.datetime(today.year, 11, 7, 8, 0),
             'end': datetime.datetime(today.year, 11, 7, 9, 30),
             'end_recurring_period': datetime.datetime(today.year + 20, 6, 1, 0, 0),
@@ -84,7 +84,7 @@ class Command(BaseCommand):
 
         rule = Rule.objects.get(frequency="MONTHLY")
         data = {
-            'title': 'TEST!!! Pay Mortgage',
+            'title': 'TEST: Pay Mortgage',
             'start': datetime.datetime(today.year, today.month, today.day, 14, 0),
             'end': datetime.datetime(today.year, today.month, today.day, 14, 30),
             'end_recurring_period': datetime.datetime(today.year, today.month, today.day, 0, 0) + datetime.timedelta(days=1),
@@ -96,7 +96,7 @@ class Command(BaseCommand):
 
         rule = Rule.objects.get(frequency="YEARLY")
         data = {
-            'title': "Rock's Birthday Party",
+            'title': "TEST: Rock's Birthday Party",
             'start': datetime.datetime(today.year, today.month, today.day, 19, 0),
             'end': datetime.datetime(today.year, today.month, today.day, 23, 59),
             'end_recurring_period': datetime.datetime(today.year, today.month, today.day, 0, 0) + datetime.timedelta(days=1),
@@ -107,7 +107,7 @@ class Command(BaseCommand):
         event.save()
 
         data = {
-            'title': 'Christmas Party',
+            'title': 'TEST: Christmas Party',
             'start': datetime.datetime(today.year, 12, 25, 19, 30),
             'end': datetime.datetime(today.year, 12, 25, 23, 59),
             'end_recurring_period': datetime.datetime(today.year + 2, 12, 31, 0, 0),

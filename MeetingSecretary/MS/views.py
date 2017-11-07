@@ -13,6 +13,8 @@ from MS.models import Group, Membership
 from django.core import serializers
 try: import simplejson as json
 except ImportError: import json
+from schedule.models.calendars import CalendarManager, Calendar
+
 
 def signup(request):
     form = SignUpForm(request.POST)
@@ -22,6 +24,11 @@ def signup(request):
         raw_password = form.cleaned_data.get('password1')
         user = authenticate(username=username, password=raw_password)
         login(request, user)
+        
+        calendar = Calendar(name=username+"_cal", slug=username)
+        calendar.save()
+        calendar.create_relation(user)
+
         #print('is valid')
         return redirect('home')
     else:
