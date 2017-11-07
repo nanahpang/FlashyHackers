@@ -1,16 +1,61 @@
-# FlashyHackers
+# Meeting Secretary
 
-This repo is for the final project of team FlashyHackers in W4156 (Advanced Software Engineering).
+This repo is the final project of team FlashyHackers in COMSW4156 (Advanced Software Engineering).
 
-Installation:
-    You have to install python3, pip3 first
-    use pip3 to install package django, simplejson, django-scheduler, django-bower (pip3 install)
+## Technology
 
-Setup:
-    Configure the database: python3 manage.py migrate
+* Python3
+* Django >= 1.10
+* jQuery
+* Javascript
+* MySQL
 
-Running:
-    in root directory
-    Start the server: python3 manage.py runserver
-    Then open the page 127.0.0.1:8000/login in web browser to see the running
+## Requirement
+
+* Django >= 1.10
+
+      pip install django
+      
+* Some packages:
+
+      pip install simplejson
+      pip install django-scheduler
+      pip install django-bower
+      pip install django-directmessages
+
+* MySQL 
     
+    Download from [MySQL Website](https://www.mysql.com/downloads/).
+    
+## Setup:
+
+* Use MySQL create database:
+
+      create database MeetingSecretary
+
+* Modify the configuration in settings.py:
+
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.mysql',
+                'NAME': 'MeetingSecretary'
+                'USER': 'your username',
+                'PASSWORD': 'your password',
+                'HOST': '',
+            } 
+        }
+    
+* Configure the database: 
+                    
+      python manage.py migrate
+
+## Running:
+* Open your command line, and go to the root directory
+* Start the server: 
+            
+      python manage.py runserver
+* Open the page 127.0.0.1:8000/login in web browser, then welcome to our Meeting Secretary! 
+    
+## Project Iteration:
+
+https://trello.com/flashyhacker

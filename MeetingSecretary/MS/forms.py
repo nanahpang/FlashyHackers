@@ -15,8 +15,8 @@ class SignUpForm(UserCreationForm):
 
 
 class CreatePartialGroupForm(forms.ModelForm):
-    group_name = forms.CharField(label = 'Group Name:', max_length=30, help_text='*Required. Only alphabets and numbers accepted')
+    name = forms.CharField(label = 'Group Name:', max_length=30, help_text='*Required. Only alphabets and numbers accepted')
     #admin_name = forms.CharField(label = 'Admin Name:', max_length=30, help_text='*Required.')
     class Meta:
         model = Group
-        exclude = ['admin_name', 'members']
+        exclude = ['admin']

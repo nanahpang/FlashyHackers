@@ -15,7 +15,8 @@
     {% endif %}
     <ul><a href="{% url 'calendar' %}">view my calendar</a></ul>
    <ul><a href="{% url 'creategroup' %}">create a group</a></ul>
-   <ul><a href="{% url 'viewgroups' %}">view groups</a><br></ul>
+   <ul><a href="/viewallgroups/">view groups</a><br></ul>
+   <ul><a href="/inbox/">view inbox</a><br></ul>
   {% else %}
         You are forbidden to enter this site, please goto /login page to login first
   {% endif %}

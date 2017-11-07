@@ -41,8 +41,8 @@ INSTALLED_APPS = [
     'schedule',
     'project_sample',
     'djangobower',
+    'directmessages',
 ]
-
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
@@ -97,6 +97,7 @@ WSGI_APPLICATION = 'MeetingSecretary.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
+
         'NAME': 'MeetingSecretary',
         'USER': 'root',
         'PASSWORD': 'dianlong',

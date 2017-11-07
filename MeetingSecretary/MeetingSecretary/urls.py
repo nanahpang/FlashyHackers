@@ -47,8 +47,14 @@ urlpatterns = [
         CreateEventView.as_view(template_name='MS/create_event.html'),
         name='calendar_create_event'),
     url(r'^viewgroups/$',views.viewgroups, name='viewgroups'),
+    url(r'^viewallgroups/', TemplateView.as_view(template_name='MS/viewallgroups.html'), name='viewallgroups'),
+    url(r'^ajax/viewadmingroups/$',views.viewadmingroups, name='viewadmingroups'),
     url(r'^ajax/showgroup/', views.showgroup, name='showgroup'),
     url(r'^groups/([a-z]*)', TemplateView.as_view(template_name='MS/groups.html'), name='groups'),
+    url(r'^ajax/addnewmember/', views.addnewmember, name='addnewmember'),
+    url(r'^ajax/deletemember/', views.deletemember, name='deletemember'),
+    url(r'^ajax/deletegroup/', views.deletegroup, name='deletegroup'),
+    url(r'^ajax/accept/', views.accept, name='accept'),
     #url(r'^mygroups/$', views.mygroups, name='mygroups'),
     # url(r'^fullcalendar/', TemplateView.as_view(template_name="Calendar/fullcalendar.html"), name='fullcalendar'),
     url(r'^schedule/', include('schedule.urls'), name='scheduler'),
@@ -56,7 +62,10 @@ urlpatterns = [
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs'
     # to INSTALLED_APPS to enable admin documentation:
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
+    #for messages
+    url(r'^ajax/sendmessages/', views.sendmessages, name='sendmessages'),
+    url(r'^inbox/',TemplateView.as_view(template_name='MS/inbox.html')),
+    url(r'^ajax/viewuserinbox/', views.viewuserinbox, name='viewuserinbox'),
     # Uncomment the next line to enable the admin:
     #url(r'^admin/', include(admin.site.urls)),
 ]
