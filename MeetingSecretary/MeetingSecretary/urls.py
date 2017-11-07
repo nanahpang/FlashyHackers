@@ -23,7 +23,12 @@ from django.views.generic import TemplateView
 from django.conf.urls import include, url
 
 from django.conf import settings
-
+from schedule.views import (
+    CalendarByPeriodsView, CalendarView, CancelOccurrenceView, CreateEventView,
+    CreateOccurrenceView, DeleteEventView, EditEventView, EditOccurrenceView,
+    EventView, FullCalendarView, OccurrencePreview, OccurrenceView,
+    api_move_or_resize_by_code, api_occurrences, api_select_create,
+)
 
 admin.autodiscover()
 
@@ -38,6 +43,10 @@ urlpatterns = [
     url(r'^test/$', views.test, name='test'),
     url(r'^creategroup/$', views.creategroup, name='creategroup'),
     url(r'^calendar/$', views.calendar, name='calendar'),
+    url(r'^create_event/(?P<calendar_slug>[-\w]+)/$',
+        CreateEventView.as_view(template_name='MS/create_event.html'),
+        name='calendar_create_event'),
+    url(r'^viewgroups/$',views.viewgroups, name='viewgroups'),
     url(r'^viewallgroups/', TemplateView.as_view(template_name='MS/viewallgroups.html'), name='viewallgroups'),
     url(r'^ajax/viewadmingroups/$',views.viewadmingroups, name='viewadmingroups'),
     url(r'^ajax/showgroup/', views.showgroup, name='showgroup'),

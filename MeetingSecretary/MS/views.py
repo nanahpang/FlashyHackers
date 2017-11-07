@@ -11,8 +11,13 @@ from django.http import HttpResponse, JsonResponse
 from MS.forms import SignUpForm, CreatePartialGroupForm
 from MS.models import Group, Membership
 from django.core import serializers
+
+try: import simplejson as json
+except ImportError: import json
+from schedule.models.calendars import CalendarManager, Calendar
 import simplejson as json
 from directmessages.apps import Inbox
+
 def signup(request):
     form = SignUpForm(request.POST)
     if form.is_valid():
@@ -21,6 +26,11 @@ def signup(request):
         raw_password = form.cleaned_data.get('password1')
         user = authenticate(username=username, password=raw_password)
         login(request, user)
+        
+        calendar = Calendar(name=username+"_cal", slug=username)
+        calendar.save()
+        calendar.create_relation(user)
+
         #print('is valid')
         return redirect('home')
     else:
@@ -204,7 +214,6 @@ def viewuserinbox(request):
 
 #calendar management
 def calendar(request):
-    print("haha")
     return render(request, "MS/fullcalendar.html")
 
 
