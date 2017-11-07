@@ -21,7 +21,7 @@ This repo is the final project of team FlashyHackers in COMSW4156 (Advanced Soft
       pip install simplejson
       pip install django-scheduler
       pip install django-bower
-      pip install directmessages
+      pip install django-directmessages
 
 * MySQL 
     
