@@ -41,8 +41,8 @@ INSTALLED_APPS = [
     'schedule',
     'project_sample',
     'djangobower',
+    'directmessages',
 ]
-
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
@@ -98,7 +98,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'MeetingSecretary',
-        'USER': 'bai',
+        'USER': 'root',
         'PASSWORD': 'baiweihua',
         'HOST': '',
         'PORT': '',

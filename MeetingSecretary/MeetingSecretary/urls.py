@@ -45,6 +45,7 @@ urlpatterns = [
     url(r'^ajax/addnewmember/', views.addnewmember, name='addnewmember'),
     url(r'^ajax/deletemember/', views.deletemember, name='deletemember'),
     url(r'^ajax/deletegroup/', views.deletegroup, name='deletegroup'),
+    url(r'^ajax/accept/', views.accept, name='accept'),
     #url(r'^mygroups/$', views.mygroups, name='mygroups'),
     # url(r'^fullcalendar/', TemplateView.as_view(template_name="Calendar/fullcalendar.html"), name='fullcalendar'),
     url(r'^schedule/', include('schedule.urls'), name='scheduler'),
@@ -52,7 +53,10 @@ urlpatterns = [
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs'
     # to INSTALLED_APPS to enable admin documentation:
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
+    #for messages
+    url(r'^ajax/sendmessages/', views.sendmessages, name='sendmessages'),
+    url(r'^inbox/',TemplateView.as_view(template_name='MS/inbox.html')),
+    url(r'^ajax/viewuserinbox/', views.viewuserinbox, name='viewuserinbox'),
     # Uncomment the next line to enable the admin:
     #url(r'^admin/', include(admin.site.urls)),
 ]
