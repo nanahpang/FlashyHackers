@@ -18,7 +18,7 @@
     <body>
     <h3 id="demo">{% trans "My Calendar" %}</h3>
     <p style="clear:both">
-
+        <button onclick="location.href='{% url 'calendar' %}'" type="button">Calendar Home</button>
         <div id="body">
             {% if messages %}
                 <ul id="messages">
