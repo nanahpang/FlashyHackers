@@ -2,12 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="57df6d7c-d79a-4c16-a636-aa73b0e5770b" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/MeetingSecretary/db.sqlite3" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MeetingSecretary/MS/templates/MS/calendar_base.html" afterPath="$PROJECT_DIR$/MeetingSecretary/MS/templates/MS/calendar_base.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MeetingSecretary/MS/templates/MS/create_event.html" afterPath="$PROJECT_DIR$/MeetingSecretary/MS/templates/MS/create_event.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MeetingSecretary/MeetingSecretary/urls.py" afterPath="$PROJECT_DIR$/MeetingSecretary/MeetingSecretary/urls.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/MeetingSecretary/schedule/templates/schedule/event.html" afterPath="$PROJECT_DIR$/MeetingSecretary/schedule/templates/schedule/event.html" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -28,24 +24,12 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="fullcalendar.html" pinned="false" current-in-tab="false">
+      <file leaf-file-name="fullcalendar.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/MeetingSecretary/MS/templates/MS/fullcalendar.html">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="306">
               <caret line="17" column="31" lean-forward="false" selection-start-line="17" selection-start-column="31" selection-end-line="17" selection-end-column="31" />
               <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="urls.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/MeetingSecretary/MeetingSecretary/urls.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="264">
-              <caret line="45" column="23" lean-forward="false" selection-start-line="45" selection-start-column="23" selection-end-line="45" selection-end-column="23" />
-              <folding>
-                <element signature="e#650#691#0" expanded="true" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -90,7 +74,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="calendar_base.html" pinned="false" current-in-tab="true">
+      <file leaf-file-name="calendar_base.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/MeetingSecretary/MS/templates/MS/calendar_base.html">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="648">
@@ -144,10 +128,10 @@
         <option value="$PROJECT_DIR$/MeetingSecretary/MS/views.py" />
         <option value="$PROJECT_DIR$/MeetingSecretary/MeetingSecretary/settings.py" />
         <option value="$PROJECT_DIR$/MeetingSecretary/MS/templates/MS/fullcalendar.html" />
-        <option value="$PROJECT_DIR$/MeetingSecretary/MeetingSecretary/urls.py" />
         <option value="$PROJECT_DIR$/MeetingSecretary/MS/templates/MS/create_event.html" />
         <option value="$PROJECT_DIR$/MeetingSecretary/schedule/templates/schedule/event.html" />
         <option value="$PROJECT_DIR$/MeetingSecretary/MS/templates/MS/calendar_base.html" />
+        <option value="$PROJECT_DIR$/MeetingSecretary/MeetingSecretary/urls.py" />
       </list>
     </option>
   </component>
@@ -413,14 +397,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/MeetingSecretary/MS/templates/MS/fullcalendar.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="17" column="31" lean-forward="false" selection-start-line="17" selection-start-column="31" selection-end-line="17" selection-end-column="31" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/MeetingSecretary/schedule/templates/schedule/_create_event_options.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -477,16 +453,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/MeetingSecretary/MeetingSecretary/urls.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="264">
-          <caret line="45" column="23" lean-forward="false" selection-start-line="45" selection-start-column="23" selection-end-line="45" selection-end-column="23" />
-          <folding>
-            <element signature="e#650#691#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/MeetingSecretary/schedule/urls.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="507">
@@ -517,6 +483,24 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="648">
           <caret line="36" column="0" lean-forward="true" selection-start-line="36" selection-start-column="0" selection-end-line="36" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MeetingSecretary/MeetingSecretary/urls.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="300">
+          <caret line="47" column="38" lean-forward="false" selection-start-line="47" selection-start-column="38" selection-end-line="47" selection-end-column="38" />
+          <folding>
+            <element signature="e#650#691#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MeetingSecretary/MS/templates/MS/fullcalendar.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="17" column="31" lean-forward="false" selection-start-line="17" selection-start-column="31" selection-end-line="17" selection-end-column="31" />
           <folding />
         </state>
       </provider>
