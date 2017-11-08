@@ -46,7 +46,6 @@ urlpatterns = [
     url(r'^create_event/(?P<calendar_slug>[-\w]+)/$',
         CreateEventView.as_view(template_name='MS/create_event.html'),
         name='calendar_create_event'),
-    url(r'^viewgroups/$',views.viewgroups, name='viewgroups'),
     url(r'^viewallgroups/', TemplateView.as_view(template_name='MS/viewallgroups.html'), name='viewallgroups'),
     url(r'^ajax/viewadmingroups/$',views.viewadmingroups, name='viewadmingroups'),
     url(r'^ajax/showgroup/', views.showgroup, name='showgroup'),
