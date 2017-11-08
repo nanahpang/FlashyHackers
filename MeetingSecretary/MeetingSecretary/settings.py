@@ -70,6 +70,7 @@ BOWER_INSTALLED_APPS = (
     'jquery',
     'jquery-ui',
     'bootstrap',
+    'datetimewidget',
 )
 
 TEMPLATES = [
@@ -97,9 +98,9 @@ WSGI_APPLICATION = 'MeetingSecretary.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'myproject',
+        'NAME': 'MeetingSecretary',
         'USER': 'root',
-        'PASSWORD': 'baiweihua',
+        'PASSWORD': 'dianlong',
         'HOST': '',
         'PORT': '',
     }

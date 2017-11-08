@@ -1,17 +1,17 @@
 from __future__ import unicode_literals
 
-from django import forms
 from django.utils.translation import ugettext_lazy as _
 
 from schedule.models import Event, Occurrence
 from schedule.widgets import SpectrumColorPicker
+from django import forms
+from functools import partial
+DateTimeInput = partial(forms.DateTimeInput, {'class': 'datepicker'})
 
 
 class SpanForm(forms.ModelForm):
-    start = forms.SplitDateTimeField(label=_("start"))
-    end = forms.SplitDateTimeField(label=_("end"),
-                                   help_text=_("The end time must be later than start time."))
-
+    start = forms.DateTimeField(label=_("start"),widget=forms.SplitDateTimeWidget(attrs={'class':'datepicker'}))
+    end = forms.DateTimeField(label=_("end"), help_text=_("The end time must be later than start time."),widget=forms.TextInput(attrs={'class':'datepicker'}))
     def clean(self):
         if 'end' in self.cleaned_data and 'start' in self.cleaned_data:
             if self.cleaned_data['end'] <= self.cleaned_data['start']:
@@ -29,6 +29,8 @@ class EventForm(SpanForm):
 
     class Meta(object):
         model = Event
+        widgets = {'start': forms.DateTimeInput(attrs={'class': 'datepicker'}),
+                   'end': forms.DateTimeInput(attrs={'class': 'datepicker'})}
         exclude = ('creator', 'created_on', 'calendar')
 
 
