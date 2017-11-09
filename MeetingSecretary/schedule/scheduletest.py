@@ -3,7 +3,7 @@ from schedule.views.CreateEventView import form_valid
 
 class TestCreateEvent(unittest.TestCase):
 
-    form = 
+    #form =
     def test_form_valid(self, form):
         test = CreateEventView
 
