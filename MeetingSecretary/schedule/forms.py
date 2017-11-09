@@ -8,7 +8,7 @@ from schedule.widgets import SpectrumColorPicker
 
 
 class SpanForm(forms.ModelForm):
-    start = forms.SplitDateTimeField(label=_("start"))
+    start = forms.SplitDateTimeField(label=_("start"),widget=forms.SelectDateWidget(empty_label=("Year", "Month", "Day")))
     end = forms.SplitDateTimeField(label=_("end"),
                                    help_text=_("The end time must be later than start time."))
 
