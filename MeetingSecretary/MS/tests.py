@@ -18,6 +18,7 @@ class PersonalProfileTest(TestCase):
 
     def test_signup(self):
         post1 = {"username": "TestUser1", "first_name": "FN1", "last_name": "LN1", "email": "email1@server.com", "password1": "passwordtest", "password2": "passwordtest"}
+        # two passwords are different
         post2 = {"username": "TestUser2", "first_name": "FN2", "last_name": "LN2", "email": "email2@server.com", "password1": "passwordtest", "password2": "passwordtest2"}
         response = self.client.post(reverse("signup"), post1)
         self.assertEqual(response.status_code, 302)
@@ -27,6 +28,7 @@ class PersonalProfileTest(TestCase):
         Testuser2 = User.objects.filter(username="TestUser2")
         self.assertEqual(Testuser1.first_name, "FN1")
         self.assertEqual(Testuser1.email, "email1@server.com")
+        # Test password hash
         self.assertNotEqual(Testuser1.password, "passwordtest")
         self.assertEqual(len(Testuser2), 0)
 
@@ -34,19 +36,46 @@ class PersonalProfileTest(TestCase):
         login = self.client.login(username="User1", password="password1")
         self.assertEqual(login, True)
 
+    def test_logout(self):
+        response = self.client.post(reverse("logout"))
+        data = response.content.decode("utf-8")
+        self.assertTrue("successfully logged out" in data)
+
+
     def test_change(self):
         login = self.client.login(username="User1", password="password1")
         post1 = {"first_password": "change", "second_password": "change"}
         post2 = {"first_name": "changefirst", "last_name": "changesecond", "email": "changeemail"}
+        # two password are different
+        post3 = {"first_password": "change", "second_password": "change2"}
+        # one password is empty
+        post4 = {"first_password": "", "second_password": ""}
+        # one required information is empty
+        post5 = {"first_name": "changefirst", "last_name": "changesecond", "email": ""}
+
         response = self.client.post(reverse("change", kwargs={"type": "password"}), post1)
         data = response.content.decode('utf-8')
         self.assertTrue("Change success" in data)
+
         response = self.client.post(reverse("change", kwargs={"type": "information"}), post2)
         data = response.content.decode("utf-8")
         self.assertTrue("Change success" in data)
         self.assertTrue("changefirst" in data)
         self.assertTrue("changesecond" in data)
         self.assertTrue("changeemail" in data)
+
+        response = self.client.post(reverse("change", kwargs={"type": "password"}), post3)
+        data = response.content.decode('utf-8')
+        self.assertTrue("Two passwords are different!" in data)
+
+        response = self.client.post(reverse("change", kwargs={"type": "password"}), post4)
+        data = response.content.decode('utf-8')
+        self.assertTrue("Password cannot be empty" in data)
+
+        response = self.client.post(reverse("change", kwargs={"type": "information"}), post5)
+        data = response.content.decode('utf-8')
+        self.assertTrue("Email cannot be empty" in data)
+
         response = self.client.get(reverse("logout"))
         data = response.content.decode('utf-8')
         self.assertTrue("logged out" in data)
@@ -113,17 +142,15 @@ class GroupTest(TestCase):
         response = self.client.post(reverse("addnewmember"), post1)
         data = json.loads(response.content.decode('utf-8'))
         self.assertEqual(data["valid"], "true")
-        #response = self.client.post(reverse("addnewmember"), post2) # error! member id should be tested
-        #data = json.loads(response.content.decode('utf-8'))
-        #self.assertEqual(data["valid"], "false")
+        response = self.client.post(reverse("addnewmember"), post2)
+        data = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(data["valid"], "false")
         response = self.client.post(reverse("addnewmember"), post3)
         data = json.loads(response.content.decode('utf-8'))
         self.assertEqual(data["valid"], "false")
         response = self.client.post(reverse("accept"), post4)
         data = json.loads(response.content.decode('utf-8'))
         self.assertEqual(data["valid"], "true")
-
-
 
 
     def test_view_one_group(self):
@@ -136,18 +163,17 @@ class GroupTest(TestCase):
         self.assertTrue("User1" in data["member"])
         self.assertTrue("User2" in data["member"])
 
-        #print(data["member"])
 
     def test_delete_member(self):
         login = self.client.login(username="User2", password="password2")
         Membership.objects.create(group=self.Group1, member=self.User1)
         post1 = {"group_name": "Group1", "memberid": "User1", "operationuser": "User2"}
-        post2 = {"group_name": "Group1", "memberid": "User2", "operationuser": "User2"}
+        post2 = {"group_name": "Group1", "memberid": "User2", "operationuser": "User2"} # admin should not be able to delete himself/herself
         post3 = {"group_name": "Group1", "memberid": "User3", "operationuser": "User1"}
         response = self.client.post(reverse("deletemember"), post1)
         data = json.loads(response.content.decode("utf-8"))
         self.assertEqual(data["valid"], "true")
-        response = self.client.post(reverse("deletemember"), post2) # error!, admin should not be able to delete himself/herself
+        response = self.client.post(reverse("deletemember"), post2)
         data = json.loads(response.content.decode("utf-8"))
         self.assertEqual(data["valid"], "false")
         response = self.client.post(reverse("deletemember"), post3)
