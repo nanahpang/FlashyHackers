@@ -40,7 +40,6 @@ urlpatterns = [
     url(r'^logout/$', auth_views.logout, {'template_name': 'MS/logged_out.html'}, name='logout'),
     url(r'^change/(?P<type>[a-z]+)/$', views.change, name='change'),
     url(r'^admin/', admin.site.urls),
-    url(r'^test/$', views.test, name='test'),
     url(r'^creategroup/$', views.creategroup, name='creategroup'),
     url(r'^calendar/$', views.calendar, name='calendar'),
     url(r'^create_event/(?P<calendar_slug>[-\w]+)/$',

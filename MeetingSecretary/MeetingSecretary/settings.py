@@ -37,12 +37,24 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'MS',
     'schedule',
     'project_sample',
     'djangobower',
     'directmessages',
+    'django_jenkins',
 ]
+
+#for jenkins
+
+JENKINS_TASKS = [
+        'django_jenkins.tasks.run_pep8',
+        'django_jenkins.tasks.run_pyflakes',
+    ]
+
+PROJECT_APPS = [
+    'MS',
+]
+INSTALLED_APPS += PROJECT_APPS
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
@@ -100,7 +112,11 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'MeetingSecretary',
         'USER': 'root',
+<<<<<<< HEAD
         'PASSWORD': 'dianlong',
+=======
+        'PASSWORD': '123456',
+>>>>>>> df2e94914a4af859a24022cbfb35365cd37dbddb
         'HOST': '',
         'PORT': '',
     }

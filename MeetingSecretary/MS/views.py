@@ -26,7 +26,7 @@ def signup(request):
         raw_password = form.cleaned_data.get('password1')
         user = authenticate(username=username, password=raw_password)
         login(request, user)
-        
+
         calendar = Calendar(name=username+"_cal", slug=username)
         calendar.save()
         calendar.create_relation(user)
@@ -38,8 +38,6 @@ def signup(request):
     #print('first time')
     return render(request, 'MS/signup.html', {'form': form})
 
-def test(request):
-    return render(request, 'MS/change.html')
 
 def change(request, type):
     if request.method == 'GET':
@@ -76,9 +74,9 @@ def creategroup(request):
             group.admin = request.user
             group.name = form.cleaned_data.get('name')
             group.save()
-            group = Group.objects.get(name =  group.name)
-            member = User.objects.get(username = request.user.username)
-            p = Membership(group = group, member = member)
+            group = Group.objects.get(name=group.name)
+            member = User.objects.get(username=request.user.username)
+            p = Membership(group=group, member=member)
             p.save()
             messages.success(request,'%s is created by %s' %(group.name, group.admin.username))
             return redirect('home')
@@ -135,8 +133,8 @@ def deletegroup(request):
     res = {'valid': result}
     res = json.dumps(res)
     mimetype = 'application/json'
-    return HttpResponse(res, mimetype)    
-    
+    return HttpResponse(res, mimetype)
+
 
 def addnewmember(request):
     group_name = request.POST.get('group_name')
@@ -146,25 +144,28 @@ def addnewmember(request):
     group = Group.objects.get(name = group_name)
     if group.admin.username == operationuser :
         from_user = group.admin
-        member = User.objects.get(username = member_id)
-        status = sendmessages(from_user, member, messages)
-        if status == True:
-            result = 'true'
-        else:
+        member = User.objects.filter(username = member_id)
+        if len(member) == 0:
             result = 'false'
+        else:
+            status = sendmessages(from_user, member[0], messages)
+            if status == True:
+                result = 'true'
+            else:
+                result = 'false'
     else :
         result = 'false'
     res = {'valid': result}
     res = json.dumps(res)
     mimetype = 'application/json'
-    return HttpResponse(res, mimetype)   
+    return HttpResponse(res, mimetype)
 
 def deletemember(request):
     group_name = request.POST.get('group_name')
     member_id = request.POST.get('memberid')
     operationuser = request.POST.get('operationuser')
     group = Group.objects.get(name = group_name)
-    if group.admin.username == operationuser :
+    if group.admin.username == operationuser and member_id != operationuser:
         member = User.objects.get(username = member_id)
         p = Membership.objects.get(group = group_name, member = member)
         p.delete()
