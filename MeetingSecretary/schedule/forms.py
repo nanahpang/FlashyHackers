@@ -10,15 +10,15 @@ DateTimeInput = partial(forms.DateTimeInput, {'class': 'datepicker'})
 
 
 class SpanForm(forms.ModelForm):
-<<<<<<< HEAD
-    start = forms.DateTimeField(label=_("start"),widget=forms.SplitDateTimeWidget(attrs={'class':'datepicker'}))
-    end = forms.DateTimeField(label=_("end"), help_text=_("The end time must be later than start time."),widget=forms.TextInput(attrs={'class':'datepicker'}))
-=======
+
+    # start = forms.DateTimeField(label=_("start"),widget=forms.SplitDateTimeWidget(attrs={'class':'datepicker'}))
+    # end = forms.DateTimeField(label=_("end"), help_text=_("The end time must be later than start time."),widget=forms.TextInput(attrs={'class':'datepicker'}))
+
     start = forms.SplitDateTimeField(label=_("start"),widget=forms.SelectDateWidget(empty_label=("Year", "Month", "Day")))
     end = forms.SplitDateTimeField(label=_("end"),
                                    help_text=_("The end time must be later than start time."))
 
->>>>>>> calendar
+
     def clean(self):
         if 'end' in self.cleaned_data and 'start' in self.cleaned_data:
             if self.cleaned_data['end'] <= self.cleaned_data['start']:
