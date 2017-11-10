@@ -20,21 +20,31 @@ class PersonalProfileTest(TestCase):
         post1 = {"username": "TestUser1", "first_name": "FN1", "last_name": "LN1", "email": "email1@server.com", "password1": "passwordtest", "password2": "passwordtest"}
         # two passwords are different
         post2 = {"username": "TestUser2", "first_name": "FN2", "last_name": "LN2", "email": "email2@server.com", "password1": "passwordtest", "password2": "passwordtest2"}
+        # required information has to be filled
+        post3 = {"username": "TestUser3", "first_name": "FN3", "last_name": "LN3", "email": "", "password1": "passwordtest", "password2": "passwordtest"}
         response = self.client.post(reverse("signup"), post1)
         self.assertEqual(response.status_code, 302)
         response = self.client.post(reverse("signup"), post2)
         self.assertEqual(response.status_code, 200)
+        response = self.client.post(reverse("signup"), post3)
+        self.assertEqual(response.status_code, 200)
         Testuser1 = User.objects.get(username="TestUser1")
         Testuser2 = User.objects.filter(username="TestUser2")
+        TestUser3 = User.objects.filter(username="TestUser3")
         self.assertEqual(Testuser1.first_name, "FN1")
         self.assertEqual(Testuser1.email, "email1@server.com")
         # Test password hash
         self.assertNotEqual(Testuser1.password, "passwordtest")
         self.assertEqual(len(Testuser2), 0)
+        self.assertEqual(len(TestUser3), 0)
 
     def test_login(self):
         login = self.client.login(username="User1", password="password1")
         self.assertEqual(login, True)
+        login = self.client.login(username="User1", password="password2")
+        self.assertEqual(login, False)
+        login = self.client.login(username="User3", password="password3")
+        self.assertEqual(login, False)
 
     def test_logout(self):
         response = self.client.post(reverse("logout"))
@@ -48,7 +58,7 @@ class PersonalProfileTest(TestCase):
         post2 = {"first_name": "changefirst", "last_name": "changesecond", "email": "changeemail"}
         # two password are different
         post3 = {"first_password": "change", "second_password": "change2"}
-        # one password is empty
+        # password is empty
         post4 = {"first_password": "", "second_password": ""}
         # one required information is empty
         post5 = {"first_name": "changefirst", "last_name": "changesecond", "email": ""}
