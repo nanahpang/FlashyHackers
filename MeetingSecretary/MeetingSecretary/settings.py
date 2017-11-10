@@ -37,12 +37,24 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'MS',
     'schedule',
     'project_sample',
     'djangobower',
     'directmessages',
+    'django_jenkins',
 ]
+
+#for jenkins
+
+JENKINS_TASKS = [
+        'django_jenkins.tasks.run_pep8',
+        'django_jenkins.tasks.run_pyflakes',
+    ]
+
+PROJECT_APPS = [
+    'MS',
+]
+INSTALLED_APPS += PROJECT_APPS
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
@@ -97,9 +109,9 @@ WSGI_APPLICATION = 'MeetingSecretary.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'myproject',
+        'NAME': 'MeetingSecretary',
         'USER': 'root',
-        'PASSWORD': 'baiweihua',
+        'PASSWORD': '123456',
         'HOST': '',
         'PORT': '',
     }
