@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'project_sample',
     'djangobower',
     'directmessages',
+    'bootstrap3_datetime',
 ]
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',

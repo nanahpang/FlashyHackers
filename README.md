@@ -22,6 +22,7 @@ This repo is the final project of team FlashyHackers in COMSW4156 (Advanced Soft
       pip install django-scheduler
       pip install django-bower
       pip install django-directmessages
+      pip install django-bootstrap3-datetimepicker
 
 * MySQL 
     

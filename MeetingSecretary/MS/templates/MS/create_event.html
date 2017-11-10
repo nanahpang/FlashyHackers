@@ -1,6 +1,5 @@
 {% extends "MS/calendar_base.html" %}
 {% load i18n %}
-
 {% block body %}
 <b>{% trans "Create or change event. All fields are required. in MS!" %}</b>
 <br><br>
@@ -8,6 +7,7 @@
   {% csrf_token %}
   <table>
     {{ form.as_table }}
+    {{ form.media }}
   </table>
   <br>
   <input type="submit" value="{% trans "Save" %}">
