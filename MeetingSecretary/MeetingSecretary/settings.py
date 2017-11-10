@@ -53,6 +53,7 @@ JENKINS_TASKS = [
 
 PROJECT_APPS = [
     'MS',
+    'bootstrap3_datetime',
 ]
 INSTALLED_APPS += PROJECT_APPS
 STATICFILES_FINDERS = [

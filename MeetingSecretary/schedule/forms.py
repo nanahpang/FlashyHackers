@@ -5,18 +5,19 @@ from django.utils.translation import ugettext_lazy as _
 from schedule.models import Event, Occurrence
 from schedule.widgets import SpectrumColorPicker
 from django import forms
-from functools import partial
-DateTimeInput = partial(forms.DateTimeInput, {'class': 'datepicker'})
-
+from bootstrap3_datetime.widgets import DateTimePicker
 
 class SpanForm(forms.ModelForm):
+    # start = forms.SplitDateTimeField(label=_("start"))
+    # end = forms.SplitDateTimeField(label=_("end"),
+    #                                help_text=_("The end time must be later than start time."))
 
-    # start = forms.DateTimeField(label=_("start"),widget=forms.SplitDateTimeWidget(attrs={'class':'datepicker'}))
-    # end = forms.DateTimeField(label=_("end"), help_text=_("The end time must be later than start time."),widget=forms.TextInput(attrs={'class':'datepicker'}))
+    start = forms.DateTimeField(label=_("start"),required=True,
+                                widget=DateTimePicker(options={"format": "MM/DD/YYYY HH:mm", "pickSeconds": False}))
+    end = forms.DateTimeField(label=_("end"),required=True,
+                              widget=DateTimePicker(options={"format": "MM/DD/YYYY HH:mm", "pickSeconds": False}),
+                              help_text=_("The end time must be later than start time."))
 
-    start = forms.SplitDateTimeField(label=_("start"),widget=forms.SelectDateWidget(empty_label=("Year", "Month", "Day")))
-    end = forms.SplitDateTimeField(label=_("end"),
-                                   help_text=_("The end time must be later than start time."))
 
 
     def clean(self):
