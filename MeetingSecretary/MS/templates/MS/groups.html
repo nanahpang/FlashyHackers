@@ -7,12 +7,6 @@
 {% endblock %}
 
 {% block content %}
-<h2></h2>
-  <h3>User Information</h3>
-name:       {{user.username}} <br>
-first name: {{user.first_name}} <br>
-last name:  {{user.last_name}} <br>
-email:      {{user.email}} <br>
 
 <h4>Administrator: </h4>
 <p>Members: </p>
@@ -104,5 +98,4 @@ $(document).ready(function(){
 {% endblock %}
 
 {% block footer%}
-<a href="{% url 'home' %}">home</a>
 {% endblock %}

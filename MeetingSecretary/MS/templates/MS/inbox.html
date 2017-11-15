@@ -4,13 +4,11 @@
 {% block title %}user's inbox{% endblock %}
 
 {% block content %}
-
-  <h2>My Inbox</h2>
-  <h3>User Information</h3>
-name:       {{user.username}} <br>
-first name: {{user.first_name}} <br>
-last name:  {{user.last_name}} <br>
-email:      {{user.email}} <br> 
+<hr class="divider" align="left">
+  <h2 class="text-lg text-uppercase my-0">
+    <strong>My Inbox</strong>
+  </h2>
+<hr class="divider" align="left">
 
 <h3>Messages</h3>
 <ol></ol>
@@ -75,8 +73,4 @@ email:      {{user.email}} <br>
   }
 </script>
 
-{% endblock %}
-
-{% block footer%}
-<a href="{% url 'home' %}">home</a>
 {% endblock %}

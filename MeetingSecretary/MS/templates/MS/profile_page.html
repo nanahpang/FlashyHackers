@@ -1,0 +1,26 @@
+{% extends 'MS/base.html' %}
+{% load i18n staticfiles %}
+
+{% block title %}User Profile{% endblock %}
+
+{% block content %}
+
+<hr class="divider" align="left">
+  <h2 class="text-lg text-uppercase my-0">
+    <strong>My Profile</strong>
+  </h2>
+<hr class="divider" align="left">
+<strong>name:</strong>       {{user.username}} <br>
+<strong>first name:</strong> {{user.first_name}} <br>
+<strong>last name:</strong>  {{user.last_name}} <br>
+<strong>email:</strong>      {{user.email}} <br>
+<br>
+<a href="/change/password/">change password</a><br>
+<a href="/change/information/">change information</a><br>
+<br>
+{% endblock %}
+
+{% block footer%}
+
+<a href="{% url 'home' %}">home</a>
+{% endblock %}

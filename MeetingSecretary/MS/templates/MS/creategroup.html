@@ -3,9 +3,13 @@
 {% block title %}Create Group{% endblock %}
 
 {% block content %}
-  {% if user.is_authenticated %}
-  <h2>Create a Group</h2>
 
+{% if user.is_authenticated %}
+<hr class="divider" align="left">
+  <h2 class="text-lg text-uppercase my-0">
+    <strong>Create a Group</strong>
+  </h2>
+<hr class="divider" align="left">
 <form id = "" method="POST">
 	{% csrf_token %}
 <h3>Group Administrator</h3>
@@ -20,5 +24,5 @@ email:      {{user.email}} <br>
 {% endblock %}
 
 {% block footer%}
-<a href="{% url 'home' %}">home</a>
+
 {% endblock %}

@@ -4,6 +4,34 @@
 
 {% block content %}
   {% if user.is_authenticated %}
+<div class="row">
+    <div class="col-lg-4">
+        <hr class="divider" align="left">
+      <h2 class="text-lg text-uppercase my-0">
+        <strong>Home Page</strong>
+      </h2>
+        <hr class="divider" align="left">
+        <div class="my-0">Hi {{user.first_name}}. Welcome! Today is: <p id="date"></p></div>
+
+        <script>
+        var weekday = new Array(7);
+        weekday[0] =  "Sunday";
+        weekday[1] = "Monday";
+        weekday[2] = "Tuesday";
+        weekday[3] = "Wednesday";
+        weekday[4] = "Thursday";
+        weekday[5] = "Friday";
+        weekday[6] = "Saturday";
+
+        n =  new Date();
+        y = n.getFullYear();
+        m = n.getMonth() + 1;
+        d = n.getDate();
+        var day = weekday[n.getDay()];
+            document.getElementById("date").innerHTML = m + "/" + d + "/" + y + " " + day;
+        </script>
+    </div>
+    <div class="col-lg-4">
   <h2>Personal Profile</h2>
 		name:       {{user.username}} <br>
 		first name: {{user.first_name}} <br>
@@ -12,11 +40,11 @@
     {% if from_change == "success" %}
 		<br>
 	    <div id="change">Change success!</div>
+    </div>
+    <div class="col-lg-4">
+    </div>
     {% endif %}
-    <ul><a href="{% url 'calendar' %}">view my calendar</a></ul>
-   <ul><a href="{% url 'creategroup' %}">create a group</a></ul>
-   <ul><a href="/viewallgroups/">view groups</a><br></ul>
-   <ul><a href="/inbox/">view inbox</a><br></ul>
+</div>
   {% else %}
         You are forbidden to enter this site, please goto /login page to login first
   {% endif %}
@@ -24,6 +52,5 @@
 {% endblock %}
 
 {% block footer %}
-	<a href="/change/password/">change password</a><br>
-	<a href="/change/information/">change information</a><br>
+
 {% endblock %}
