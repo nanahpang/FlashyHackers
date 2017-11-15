@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'project_sample',
     'djangobower',
     'directmessages',
+    'bootstrap3_datetime',
     'django_jenkins',
 ]
 
@@ -53,7 +54,6 @@ JENKINS_TASKS = [
 
 PROJECT_APPS = [
     'MS',
-    'bootstrap3_datetime',
 ]
 INSTALLED_APPS += PROJECT_APPS
 STATICFILES_FINDERS = [

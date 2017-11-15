@@ -4,8 +4,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from schedule.models import Event, Occurrence
 from schedule.widgets import SpectrumColorPicker
-from django import forms
 from bootstrap3_datetime.widgets import DateTimePicker
+from django import forms
 
 class SpanForm(forms.ModelForm):
     # start = forms.SplitDateTimeField(label=_("start"))
