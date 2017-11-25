@@ -1,7 +1,33 @@
-{% extends "base.html" %}
+{% extends "schedule/calendar_base.html" %}
 {% load scheduletags i18n %}
+{% load i18n static %}
+{% block head_title %}{% trans "Dailycalendar" %}{% endblock %}
 
+{% block tab_id %}id="home_tab"{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'bootstrap/dist/css/bootstrap.css' %}" type="text/css" media="screen">
+<script type="text/javascript" src="{% static 'jquery/dist/jquery.js' %}"></script>
+<script type="text/javascript" src="{% static 'jquery-ui/jquery-ui.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bootstrap/dist/js/bootstrap.js' %}"></script>
+<script type="text/javascript" src="{% static 'schedule.js' %}"></script>
+<link rel="stylesheet" href="{% static 'schedule.css' %}" type="text/css" media="screen">
+<link rel="stylesheet" href="{% static 'jquery-ui/themes/base/all.css' %}" type="text/css" media="screen">
+{% endblock %}
 {% block body %}
+<div id="body">
+    <hr class="divider">
+  <h2 class="text-lg text-uppercase my-0">
+    <strong>My Calendar</strong>
+  </h2>
+<hr class="divider">
+{% if messages %}
+    <ul id="messages">
+        {% for message in messages %}
+        <li id="message_{{ forloop.counter }}"><a href="#" onclick="$('#message_{{ forloop.counter }}').fadeOut(); return false;"><small>{% trans "clear" %}</small></a> {{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
 
 {% include "schedule/_dialogs.html" %}
 <div class="row row-centered">
