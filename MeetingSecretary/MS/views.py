@@ -16,9 +16,8 @@ try: import simplejson as json
 except ImportError: import json
 from schedule.models.calendars import CalendarManager, Calendar
 import simplejson as json
-#from directmessages.apps import Inbox
 from .messageHandler import MessageHandler
-Inbox = MessageHandler()
+messageHandler = MessageHandler()
 
 def signup(request):
     form = SignUpForm(request.POST)
@@ -141,16 +140,15 @@ def deletegroup(request):
 def addnewmember(request):
     group_name = request.POST.get('group_name')
     member_id = request.POST.get('memberid')
-    operationuser = request.POST.get('operationuser')
-    messages = request.POST.get('messages')
+    group_admin = request.POST.get('group_admin')
     group = Group.objects.get(name = group_name)
-    if group.admin.username == operationuser :
+    if group.admin.username == group_admin :
         from_user = group.admin
         member = User.objects.filter(username = member_id)
         if len(member) == 0:
             result = 'false'
         else:
-            status = sendmessages(from_user, member[0], messages, 'GI')
+            status = sendgroupinvitation(from_user, member[0], group)
             if status == True:
                 result = 'true'
             else:
@@ -189,31 +187,58 @@ def accept(request):
     result = 'true'
     admin = Group.objects.get(name = group_name).admin
     messages = username+ ' has accepted your invitation of joining group '+ group_name
-    message, status = Inbox.send_message(member, admin, messages, 'NO')
+    status = messageHandler.send_message(member, admin, messages)
     res = {'valid': result}
     res = json.dumps(res)
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
 
 #for messages
-def sendmessages(from_user, to_user, messages, messageType):
-    status = Inbox.send_message(from_user, to_user, messages, messageType)
+def sendmessages(from_user, to_user, messages):
+    status = messageHandler.send_message(from_user, to_user, messages)
     if status == 200:
         result = True
     else:
         result = False
     return result
 
+def sendgroupinvitation(from_user, to_user, group):
+    status = messageHandler.send_groupinvitation(from_user, to_user, group)
+    if status == 200:
+        result = True
+    else:
+        result = False
+    return result
+
+
 def viewuserinbox(request):
     username = request.POST.get('username')
     user = User.objects.get(username = username)
-    messages_entries = Inbox.get_unread_message(user)
+    messages_entries = messageHandler.get_unread_message(user)
     messages = []
     for item in messages_entries:
         messages.append(item.content)
     res = json.dumps(messages)
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
+
+def view_groupinvitation(request):
+    username = request.POST.get('username')
+    user = User.objects.get(username = username)
+    invitation_entries = messageHandler.get_invitation(user)
+    invitations = []
+    for item in invitation_entries:
+        invitation = {
+            'group':item.group.name,
+            'admin': item.sender.username,
+            'status' : item.status,
+            'sent_at' : item.sent_at.isoformat()
+        }
+        invitations.append(invitation)
+    res = json.dumps(invitations)
+    mimetype = 'application/json'
+    return HttpResponse(res, mimetype)
+
 
 #calendar management
 def calendar(request):

@@ -16,20 +16,29 @@ class Membership(models.Model):
 	member = models.ForeignKey(User)
 	group = models.ForeignKey(Group)
 
+class GroupInvitation(models.Model):
+	sender = models.ForeignKey(User, related_name = 'send_gi')
+	recipient = models.ForeignKey(User, related_name = 'received_gi')
+	group = models.ForeignKey(Group, related_name = 'group_gi')
+	sent_at = models.DateTimeField(null=True, blank=True)
+	ACCEPT = 'AC'
+	REJECT = 'RJ'
+	NORESPONSE = 'NO'
+	STATUS_OF_MESSAGES_CHOICES = (
+        (ACCEPT, 'Accepted'),
+        (REJECT, 'Rejected'),
+        (NORESPONSE, 'No response')
+    )
+	status = models.CharField(max_length = 2, choices = STATUS_OF_MESSAGES_CHOICES, default = NORESPONSE)
+
+	def save(self, **kwargs):
+		if not self.id:
+			self.sent_at = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+		super(GroupInvitation, self).save(**kwargs)
+
 
 class Message(models.Model):
 	content = models.CharField(max_length = 140)
-	DEFAULT = 'DF'
-	GROUP_INVITATION = 'GI'
-	MEETING_INVITATION = 'MI'
-	NOTIFICATION = 'NO'
-	MESSAGE_TYPES_CHOICES = (
-        (NOTIFICATION, 'Notification'),
-        (GROUP_INVITATION, 'Group_invitaion'),
-        (MEETING_INVITATION, 'Meeting_invitation'),
-        (DEFAULT, 'Default'),
-    )
-	messageType = models.CharField(max_length = 2, choices = MESSAGE_TYPES_CHOICES, default = DEFAULT)
 	sender = models.ForeignKey(User, related_name = 'send_dm')
 	recipient = models.ForeignKey(User, related_name = 'received_dm')
 	sent_at = models.DateTimeField(null=True, blank=True)
