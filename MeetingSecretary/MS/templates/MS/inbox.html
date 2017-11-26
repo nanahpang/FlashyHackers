@@ -14,7 +14,7 @@
 <ol></ol>>
 <h4>Group Invitations</h4>
 <ul class = "list-group">    
-    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="GroupInvitationModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -24,9 +24,12 @@
             </button>
           </div>
           <div class="modal-body">
-              <button type="button" class="btn btn-success">Accept</button>
-              <button type="button" class="btn btn-danger">Reject</button>
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-outline-success" id = "accept_gi">Accept</button>
+              <button type="button" class="btn btn-outline-danger">Reject</button>
+              <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
@@ -63,6 +66,26 @@
       }
     });
 
+  function grouphandler(group_name) {
+      $("#GroupInvitationModal").on('show.bs.modal', function () {
+          // 弹出框OK按钮绑定事件处理
+          $("#accept_gi").on('click', function () {            
+            $.ajax({
+                type: 'POST',
+                url: '/ajax/accept/',
+                data: {username, group_name, csrfmiddlewaretoken:'{{ csrf_token}}'},
+                dataType: 'json',
+                success: function(data){
+                  if(data['valid'] == 'true')
+                      alert("You have joined group "+ group_name + " successfully! Please refresh to check your groups.");
+                  else 
+                    alert("Something happened. :(");					
+                }
+            }); 
+          });
+      });
+      $("#GroupInvitationModal").modal('show');
+  }
 
     $.ajax({
       type: 'POST',
@@ -73,7 +96,11 @@
         var invitation_count = data.length;
         for (var i = 0; i < invitation_count; ++i) {
           if (data[i]['status'] == 'NO') {
-            $("ul").append("<button type='button' class='btn btn-light' data-toggle='modal' data-target='#exampleModal' data-whatever='@mdo'>" + data[i]['admin'] + " invites you to join group " + data[i]['group'] + ".</button>");
+            $("ul").append(
+              "<li class = 'list-group-item'>"+ data[i]['admin'] + " invites you to join group " + data[i]['group'] + 
+              ".<td><button type = 'button' class='btn btn-primary' onclick = group_handler('"+ data[i]['group'] +"')"+"></td></li>"
+              );
+            
           }
           else {
             $("ul").append("<li class = 'list-group-item disabled'> You have joined group " + data[i]['group'] + ".</li>");
@@ -81,22 +108,36 @@
         }
       }
     });
+
+
+
+
   });
 
-  function accept(groupname) {
+     
+
+  function group_handler(groupname) {
       var username = '{{user.username}}';
-      $.ajax({
-          type: 'POST',
-          url: '/ajax/accept/',
-          data: {username, groupname, csrfmiddlewaretoken:'{{ csrf_token}}'},
-          dataType: 'json',
-          success: function(data){
-            if(data['valid'] == 'true')
-                alert("You have joined group "+ groupname + " successfully! Please refresh to check your groups.");
-          	else 
-            	alert("Something happened. :(");					
-          }
+      alert(groupname);
+      var group_name = groupname;
+      $("#GroupInvitationModal").on('show.bs.modal', function () {
+          // 弹出框OK按钮绑定事件处理
+          $("#accept_gi").on('click', function () {            
+            $.ajax({
+                type: 'POST',
+                url: '/ajax/accept/',
+                data: {username, group_name, csrfmiddlewaretoken:'{{ csrf_token}}'},
+                dataType: 'json',
+                success: function(data){
+                  if(data['valid'] == 'true')
+                      alert("You have joined group "+ groupname + " successfully! Please refresh to check your groups.");
+                  else 
+                    alert("Something happened. :(");					
+                }
+            }); 
+          });
       });
+      $("#GroupInvitationModal").modal('show');
   }
   function split(message){
       var username_start = message.indexOf("{") + 1;

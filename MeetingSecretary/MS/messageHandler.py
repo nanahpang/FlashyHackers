@@ -31,3 +31,10 @@ class MessageHandler():
 
     def get_invitation(self, user) :
         return GroupInvitation.objects.all().filter(recipient = user) 
+
+    def set_invitation_accept(self, user, group):
+        invitation_entries = GroupInvitation.objects.all().filter(recipient = user, group = group) 
+        for item in invitation_entries:
+            item.status = 'AC'
+            item.save()
+        return True

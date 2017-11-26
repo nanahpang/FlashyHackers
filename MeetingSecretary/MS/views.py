@@ -178,29 +178,33 @@ def deletemember(request):
     return HttpResponse(res, mimetype)
 
 def accept(request):
-    group_name = request.POST.get('groupname')
+    group_name = request.POST.get('group_name')
     username = request.POST.get('username')
+    print(group_name)
+    print(username)
     member = User.objects.get(username = username)
     group = Group.objects.get(name = group_name)
+    
+    #let this new member join group
     p = Membership(group = group, member = member)
     p.save()
     result = 'true'
+    
+    #send notification to admin
     admin = Group.objects.get(name = group_name).admin
     messages = username+ ' has accepted your invitation of joining group '+ group_name
     status = messageHandler.send_message(member, admin, messages)
+    
+    #modify all other invitations related to this event 'accepted'
+    messageHandler.set_invitation_accept(member, group)
+    
+    #return result to ajax
     res = {'valid': result}
     res = json.dumps(res)
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
 
 #for messages
-def sendmessages(from_user, to_user, messages):
-    status = messageHandler.send_message(from_user, to_user, messages)
-    if status == 200:
-        result = True
-    else:
-        result = False
-    return result
 
 def sendgroupinvitation(from_user, to_user, group):
     status = messageHandler.send_groupinvitation(from_user, to_user, group)
