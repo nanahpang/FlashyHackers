@@ -16,7 +16,9 @@ try: import simplejson as json
 except ImportError: import json
 from schedule.models.calendars import CalendarManager, Calendar
 import simplejson as json
-from directmessages.apps import Inbox
+#from directmessages.apps import Inbox
+from .messageHandler import MessageHandler
+Inbox = MessageHandler()
 
 def signup(request):
     form = SignUpForm(request.POST)
@@ -148,7 +150,7 @@ def addnewmember(request):
         if len(member) == 0:
             result = 'false'
         else:
-            status = sendmessages(from_user, member[0], messages)
+            status = sendmessages(from_user, member[0], messages, 'GI')
             if status == True:
                 result = 'true'
             else:
@@ -187,15 +189,15 @@ def accept(request):
     result = 'true'
     admin = Group.objects.get(name = group_name).admin
     messages = username+ ' has accepted your invitation of joining group '+ group_name
-    message, status = Inbox.send_message(member, admin, messages)
+    message, status = Inbox.send_message(member, admin, messages, 'NO')
     res = {'valid': result}
     res = json.dumps(res)
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
 
 #for messages
-def sendmessages(from_user, to_user, messages):
-    message, status = Inbox.send_message(from_user, to_user, messages)
+def sendmessages(from_user, to_user, messages, messageType):
+    status = Inbox.send_message(from_user, to_user, messages, messageType)
     if status == 200:
         result = True
     else:
@@ -205,7 +207,7 @@ def sendmessages(from_user, to_user, messages):
 def viewuserinbox(request):
     username = request.POST.get('username')
     user = User.objects.get(username = username)
-    messages_entries = Inbox.get_unread_messages(user)
+    messages_entries = Inbox.get_unread_message(user)
     messages = []
     for item in messages_entries:
         messages.append(item.content)

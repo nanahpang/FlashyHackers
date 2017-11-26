@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'schedule',
     'project_sample',
     'djangobower',
-    'directmessages',
     'bootstrap3_datetime',
     'django_jenkins',
 ]
@@ -113,7 +112,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'MeetingSecretary',
         'USER': 'root',
-        'PASSWORD': 'dianlong',
+        'PASSWORD': '123456',
         'HOST': '',
         'PORT': '',
     }
