@@ -34,8 +34,8 @@
                         
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-success" id = "accept_gi">Accept</button>
-                        <button type="button" class="btn btn-outline-danger" id = "reject_gi">Reject</button>
+                        <button type="button" class="btn btn-outline-success" data-dismiss="modal" id = "accept_gi">Accept</button>
+                        <button type="button" class="btn btn-outline-danger" data-dismiss="modal" id = "reject_gi">Reject</button>
                         <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
                     </div>
                   </div>
@@ -101,11 +101,10 @@
             if (status == 'NO') {
               $("#gi_list").append(
                 "<li class = 'list-group-item'>"+ data[i]['admin'] + " invites you to join group " + data[i]['group'] + 
-                ".<td><button type = 'button' class='btn btn-primary' onclick = group_handler('"+ data[i]['group'] +"')"+"></td></li>"
+                ".<td><button type = 'button' class='btn btn-primary' onclick = group_handler('"+ data[i]['group'] +"')"+">view</button></td></li>"
                 );              
             }
             else if (status == 'AC'){
-              alert(status=='AC');
               $("#gi_list").append("<li class = 'list-group-item disabled'> You have joined group " + data[i]['group'] + ".</li>");
             }
             else if (status == 'RJ'){
@@ -121,10 +120,12 @@
 
   function group_handler(groupname) {
       var username = '{{user.username}}';
-      alert(groupname);
       var group_name = groupname;
       $("#GroupInvitationModal").on('show.bs.modal', function () {
-          $("#accept_gi").on('click', function () {            
+        var modal = $(this);
+        modal.find('.modal-body').text('Will you accept the invitation from group '+ group_name + '?');
+          $("#accept_gi").on('click', function () {     
+            $("#GroupInvitationModal").modal('hide');       
             $.ajax({
                 type: 'POST',
                 url: '/ajax/accept/',
@@ -134,7 +135,7 @@
                   if(data['valid'] == 'true')
                       alert("You have joined group "+ groupname + " successfully! Please refresh to check your groups.");
                   else 
-                    alert("Something happened. :(");					
+                    alert("Something happened. :(");				
                 }
             }); 
           });
@@ -149,12 +150,13 @@
                   if(data['valid'] == 'true')
                       alert("You have rejected the invitation of group "+ groupname + " .  :-(");
                   else 
-                    alert("Something happened. :(");					
+                    alert("Something happened. :(");				
                 }
             }); 
           });
       });
-      $("#GroupInvitationModal").modal('show');
+      $("#GroupInvitationModal").modal('show');	
+      
   }
 </script>
 
