@@ -4,22 +4,41 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <title>{% if site_name %}{{ site_name }} : {% endif %}{% block head_title %}{% endblock %}</title>
-        <link rel="stylesheet" href="{% static "bootstrap/dist/css/bootstrap.css" %}" type="text/css" media="screen">
-        <script type="text/javascript" src="{% static "jquery/dist/jquery.js" %}"></script>
-        <script type="text/javascript" src="{% static "jquery-ui/jquery-ui.min.js" %}"></script>
-        <script type="text/javascript" src="{% static "bootstrap/dist/js/bootstrap.js" %}"></script>
-        <script type="text/javascript" src="{% static "schedule.js" %}"></script>
-        <link rel="stylesheet" href="{% static "schedule.css" %}" type="text/css" media="screen">
-        <link rel="stylesheet" href="{% static "jquery-ui/themes/base/all.css" %}" type="text/css" media="screen">
+        <link rel="stylesheet" href="{% static 'bootstrap/dist/css/bootstrap.css' %}" type="text/css" media="screen">
+        <link rel="stylesheet" href="{% static 'schedule.css' %}" type="text/css" media="screen">
+        <link rel="stylesheet" href="{% static 'jquery-ui/themes/base/all.css' %}" type="text/css" media="screen">
+        <link rel="stylesheet"
+              href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.css">
+        <link rel="stylesheet"
+              href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+
+        <script type="text/javascript" src="{% static 'jquery/dist/jquery.js' %}"></script>
+        <script type="text/javascript" src="{% static 'jquery-ui/jquery-ui.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'bootstrap/dist/js/bootstrap.js' %}"></script>
+        <script type="text/javascript" src="{% static 'schedule.js' %}"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.js"></script>
+        <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.js"></script>
+
+        <!-- Copy from base.html -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Josefin+Slab:100,300,400,600,700,100italic,300italic,400italic,600italic,700italic" rel="stylesheet" type="text/css">
+        <link href="{% static 'css/business-casual.css' %}" rel="stylesheet">
+        <script src="http://ajax.aspnetcdn.com/ajax/jquery/jquery-3.2.0.min.js"></script>
+        <script src="{% static 'jquery_home/jquery.min.js' %}"></script>
+        <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
         {% block extra_head %}
         {% endblock %}
     </head>
 
     <body>
-    <h3 id="demo">{% trans "This is a demo of a django-schedule calendar" %}</h3>
-    <p style="clear:both">
-
-        <div id="body">
+    <header>
+      <div class="tagline-upper text-center text-heading text-shadow text-white mt-5 d-none d-lg-block">Meeting Secretary</div>
+      <div class="tagline-lower text-center text-expanded text-shadow text-uppercase text-white mb-5 d-none d-lg-block">A web application for easy meeting setup</div>
+      <div id="body">
             {% if messages %}
                 <ul id="messages">
                     {% for message in messages %}
@@ -27,13 +46,73 @@
                     {% endfor %}
                 </ul>
             {% endif %}
-
-            {% block body %}
-            {% endblock %}
-
+      </div>
+      <div><a href="#menu-toggle" class="btn btn-secondary" id="menu-toggle">Menu</a></div>
+    </header>
+    <p style="clear:both">
+    <div id="wrapper">
+        <div id="sidebar-wrapper">
+            <ul class="sidebar-nav">
+                <li class="sidebar-brand">
+                    <a>
+                        Hi {{user.first_name}}!
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'home' %}">Home</a>
+                </li>
+                <li>
+                    <a href="{% url 'calendar' %}">My Calendar</a>
+                </li>
+                <li>
+                    <a href="{% url 'creategroup' %}">Create New Group</a>
+                </li>
+                <li>
+                    <a href="/viewallgroups/">My Groups</a>
+                </li>
+                <li>
+                    <a href="/inbox/">Inbox</a>
+                </li>
+                <li>
+                    <a href="/profile/">My Profile</a>
+                </li>
+            </ul>
         </div>
 
-        <div id="footer">{% block footer %}{% endblock %}</div>
+        <div id="page-content-wrapper">
+        <div class="container-fluid">
+            <div class="bg-faded p-4 my-4">
+            <div class="row">
+            <div class="col-lg-12">
+                    <p style="clear:both">
+                    <button onclick="location.href='{% url 'calendar' %}'" type="button">Calendar Home</button>
+                    {% block body %}
+
+                    {% endblock %}
+            </div>
+            </div>
+            </div>
+        </div>
+        </div>
+
+        <footer class="bg-faded text-center py-3">
+            <div class="container">
+
+                <a href="{% url 'logout' %}">logout</a><br>
+                <p class="m-0">Copyright &copy; FlashyHackers 2017</p>
+            </div>
+                {% block footer%}
+                {% endblock %}
+        </footer>
+     </div>
+
+        <!-- Menu Toggle Script -->
+        <script>
+        $("#menu-toggle").click(function(e) {
+            e.preventDefault();
+            $("#wrapper").toggleClass("toggled");
+        });
+        </script>
 
     </body>
 </html>
