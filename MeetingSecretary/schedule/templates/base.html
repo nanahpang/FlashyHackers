@@ -62,7 +62,7 @@
                     <a href="{% url 'home' %}">Home</a>
                 </li>
                 <li>
-                    <a href="{% url 'calendar' %}">My Calendar</a>
+                    <a href="/schedule/fullcalendar/{{user.username}}">My Calendar</a>
                 </li>
                 <li>
                     <a href="{% url 'creategroup' %}">Create New Group</a>
@@ -85,7 +85,7 @@
             <div class="row">
             <div class="col-lg-12">
                     <p style="clear:both">
-                    <button onclick="location.href='{% url 'calendar' %}'" type="button">Calendar Home</button>
+                    <button onclick="location.href='/schedule/fullcalendar/{{user.username}}'" type="button">Calendar Home</button>
                     {% block body %}
 
                     {% endblock %}
