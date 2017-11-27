@@ -15,7 +15,7 @@ from django.core import serializers
 try: import simplejson as json
 except ImportError: import json
 from schedule.models.calendars import CalendarManager, Calendar
-import simplejson as json
+from django.utils import timezone
 from .messageHandler import MessageHandler
 messageHandler = MessageHandler()
 
@@ -180,8 +180,6 @@ def deletemember(request):
 def accept(request):
     group_name = request.POST.get('group_name')
     username = request.POST.get('username')
-    print(group_name)
-    print(username)
     member = User.objects.get(username = username)
     group = Group.objects.get(name = group_name)
     
@@ -192,12 +190,32 @@ def accept(request):
     
     #send notification to admin
     admin = Group.objects.get(name = group_name).admin
-    messages = username+ ' has accepted your invitation of joining group '+ group_name
-    status = messageHandler.send_message(member, admin, messages)
+    message = username+ ' has accepted your invitation of joining group '+ group_name
+    status = messageHandler.send_message(member, admin, message)
     
     #modify all other invitations related to this event 'accepted'
     messageHandler.set_invitation_accept(member, group)
     
+    #return result to ajax
+    res = {'valid': result}
+    res = json.dumps(res)
+    mimetype = 'application/json'
+    return HttpResponse(res, mimetype)
+
+def reject_group(request):
+    group_name = request.POST.get('group_name')
+    username = request.POST.get('username')
+    member = User.objects.get(username = username)
+    group = Group.objects.get(name = group_name)
+     
+    #send notification to admin
+    admin = Group.objects.get(name = group_name).admin
+    message = username+ ' has rejected your invitation of joining group '+ group_name
+    status = messageHandler.send_message(member, admin, message)
+    
+    #modify all other invitations related to this event 'accepted'
+    messageHandler.set_invitation_reject(member, group)
+    result = 'true'
     #return result to ajax
     res = {'valid': result}
     res = json.dumps(res)
@@ -215,13 +233,19 @@ def sendgroupinvitation(from_user, to_user, group):
     return result
 
 
-def viewuserinbox(request):
+def view_notification(request):
     username = request.POST.get('username')
     user = User.objects.get(username = username)
     messages_entries = messageHandler.get_unread_message(user)
     messages = []
     for item in messages_entries:
-        messages.append(item.content)
+        item.read_at = timezone.now()
+        item.save()
+        message = {
+            'content' : item.content,
+            'sent_at' : item.sent_at.isoformat()
+        }
+        messages.append(message)
     res = json.dumps(messages)
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)

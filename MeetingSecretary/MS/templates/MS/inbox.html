@@ -6,35 +6,50 @@
 {% block content %}
 <hr class="divider" align="left">
   <h2 class="text-lg text-uppercase my-0">
-    <strong>My Inbox</strong>
+    <strong>Inbox</strong>
   </h2>
 <hr class="divider" align="left">
 
-<h3>Messages</h3>
-<ol></ol>>
-<h4>Group Invitations</h4>
-<ul class = "list-group">    
-    <div class="modal fade" id="GroupInvitationModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Group Invitation</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-              
-          </div>
-          <div class="modal-footer">
-              <button type="button" class="btn btn-outline-success" id = "accept_gi">Accept</button>
-              <button type="button" class="btn btn-outline-danger">Reject</button>
-              <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
-          </div>
-        </div>
+<div class="container">
+    <div class="row">
+      <div class="col-md">
+          <h3>Notifications</h3>
+          <ul class="list-group" id="nf_list"></ul>>
       </div>
     </div>
-  </ul>>
+    <div class="row">
+      <div class="col-md">
+          <h3>Group Invitations</h3>
+          <ul class = "list-group" id="gi_list">    
+              <div class="modal fade" id="GroupInvitationModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="exampleModalLabel">Group Invitation</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-success" id = "accept_gi">Accept</button>
+                        <button type="button" class="btn btn-outline-danger" id = "reject_gi">Reject</button>
+                        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ul>>
+      </div>
+      <div class="col-md">
+        <h3>Meeting Invitations</h3>>
+      </div>
+    </div>
+  </div>
+
+
 
 <script>
     function opennew(groupname){		
@@ -46,47 +61,31 @@
 
   $(document).ready(function(){
     var username = '{{user.username}}';
+    /******************************/
+    /*   read all notifications   */
+    /******************************/
     $.ajax({
       type: 'POST',
-      url: '/ajax/viewuserinbox/',
+      url: '/ajax/viewnotification/',
       data: {username, csrfmiddlewaretoken:'{{ csrf_token}}'},
       dataType: 'json',
       success: function(data){
         var message_count = data.length;
-        for (var i = 0; i < message_count; ++i) {
-          if (data[i].indexOf('{') > 0) {
-            var invitation = split(data[i]);
-            $("ol").append("<li>User " + invitation[0] + " invites you to group " + invitation[1] + "</li>");
-            $("ol").append("<button type='button'" + "onclick = accept('" + invitation[1] + "')" + ">accept</button>");
-            //$("ol").append("<button type='button'" + "onclick = delete('" + invitation[1] + "')" + ">delete</button>");
-          }
-          else 
-            $("ol").append("<li>"+data[i]+"</li>");
+        if (message_count == 0) 
+          $("#nf_list").append("You have no notifications for now. Take a break.   :-)");
+        else {
+          for (var i = 0; i < message_count; ++i) { 
+            var content = data[i]['content'];
+            var sent_at = data[i]['sent_at'];
+            $("#nf_list").append("<li class = 'list-group-item list-group-item-action'>"+content+"</li>");
         }
+        }
+        
       }
     });
-
-  function grouphandler(group_name) {
-      $("#GroupInvitationModal").on('show.bs.modal', function () {
-          // 弹出框OK按钮绑定事件处理
-          $("#accept_gi").on('click', function () {            
-            $.ajax({
-                type: 'POST',
-                url: '/ajax/accept/',
-                data: {username, group_name, csrfmiddlewaretoken:'{{ csrf_token}}'},
-                dataType: 'json',
-                success: function(data){
-                  if(data['valid'] == 'true')
-                      alert("You have joined group "+ group_name + " successfully! Please refresh to check your groups.");
-                  else 
-                    alert("Something happened. :(");					
-                }
-            }); 
-          });
-      });
-      $("#GroupInvitationModal").modal('show');
-  }
-
+    /******************************/
+    /* read all group invitations */
+    /******************************/
     $.ajax({
       type: 'POST',
       url: '/ajax/viewgroupinvitation/',
@@ -94,24 +93,28 @@
       dataType: 'json',
       success: function(data){
         var invitation_count = data.length;
-        for (var i = 0; i < invitation_count; ++i) {
-          if (data[i]['status'] == 'NO') {
-            $("ul").append(
-              "<li class = 'list-group-item'>"+ data[i]['admin'] + " invites you to join group " + data[i]['group'] + 
-              ".<td><button type = 'button' class='btn btn-primary' onclick = group_handler('"+ data[i]['group'] +"')"+"></td></li>"
-              );
-            
+        if (invitation_count == 0) 
+          $("#gi_list").append("You have no invitations for now. Take a break.  :-)");
+        else {
+          for (var i = 0; i < invitation_count; ++i) {
+            var status = data[i]['status'];
+            if (status == 'NO') {
+              $("#gi_list").append(
+                "<li class = 'list-group-item'>"+ data[i]['admin'] + " invites you to join group " + data[i]['group'] + 
+                ".<td><button type = 'button' class='btn btn-primary' onclick = group_handler('"+ data[i]['group'] +"')"+"></td></li>"
+                );              
+            }
+            else if (status == 'AC'){
+              alert(status=='AC');
+              $("#gi_list").append("<li class = 'list-group-item disabled'> You have joined group " + data[i]['group'] + ".</li>");
+            }
+            else if (status == 'RJ'){
+              $("#gi_list").append("<li class = 'list-group-item disabled'> You have rejected the invitation of group " + data[i]['group'] + ".</li>");
+            }
           }
-          else {
-            $("ul").append("<li class = 'list-group-item disabled'> You have joined group " + data[i]['group'] + ".</li>");
-          }
-        }
+        }        
       }
     });
-
-
-
-
   });
 
      
@@ -121,7 +124,6 @@
       alert(groupname);
       var group_name = groupname;
       $("#GroupInvitationModal").on('show.bs.modal', function () {
-          // 弹出框OK按钮绑定事件处理
           $("#accept_gi").on('click', function () {            
             $.ajax({
                 type: 'POST',
@@ -136,20 +138,23 @@
                 }
             }); 
           });
+
+          $("#reject_gi").on('click', function () {            
+            $.ajax({
+                type: 'POST',
+                url: '/ajax/rejectgroup/',
+                data: {username, group_name, csrfmiddlewaretoken:'{{ csrf_token}}'},
+                dataType: 'json',
+                success: function(data){
+                  if(data['valid'] == 'true')
+                      alert("You have rejected the invitation of group "+ groupname + " .  :-(");
+                  else 
+                    alert("Something happened. :(");					
+                }
+            }); 
+          });
       });
       $("#GroupInvitationModal").modal('show');
-  }
-  function split(message){
-      var username_start = message.indexOf("{") + 1;
-      var username_end = message.indexOf("}");
-      var username = message.substring(username_start, username_end);
-      var groupname_start = message.indexOf("[") + 1;
-      var groupname_end = message.indexOf("]");
-      var groupname = message.substring(groupname_start, groupname_end);
-      var invitation = new Array();
-      invitation[0] = username;
-      invitation[1] = groupname;
-      return invitation;
   }
 </script>
 

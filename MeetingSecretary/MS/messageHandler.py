@@ -38,3 +38,10 @@ class MessageHandler():
             item.status = 'AC'
             item.save()
         return True
+
+    def set_invitation_reject(self, user, group):
+        invitation_entries = GroupInvitation.objects.all().filter(recipient = user, group = group) 
+        for item in invitation_entries:
+            item.status = 'RJ'
+            item.save()
+        return True
