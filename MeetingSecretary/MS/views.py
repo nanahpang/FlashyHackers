@@ -7,7 +7,7 @@ from django.contrib import messages
 # from MS.models import CredentialsModel
 
 # Create your views here.
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from MS.forms import SignUpForm, CreatePartialGroupForm
 from MS.models import Group, Membership
 from django.core import serializers
@@ -271,6 +271,13 @@ def view_groupinvitation(request):
 #calendar management
 def calendar(request):
     return render(request, "MS/fullcalendar.html")
+    # username = request.POST.get('username')
+    # user = User.objects.get(username = username)
+    # print(user.username)
+    # url = "/schedule/fullcalendar/" + 'username' + "/"
+    # print(url)
+    # # return render(request,'./fullcalendar.html','calendar_slug'=username)
+    # return HttpResponseRedirect(url)
 
 
 
