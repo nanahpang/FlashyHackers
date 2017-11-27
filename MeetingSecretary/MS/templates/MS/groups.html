@@ -58,12 +58,11 @@ $(document).ready(function(){
 			var group_name = url.substring(index);
 			var memberid = document.getElementById('newmembername').value;
 			//var messages = document.getElementById('messages').value;
-			var operationuser = '{{ user.username }}'
-			var messages = "User : {" + operationuser + "} invites you join group ["+ group_name + "]";
+			var group_admin = '{{ user.username }}'
 			$.ajax({
 				type: "POST",
 				url: "/ajax/addnewmember/",
-				data: {group_name, memberid,messages,operationuser,csrfmiddlewaretoken: '{{ csrf_token }}'},
+				data: {group_name, group_admin, memberid, csrfmiddlewaretoken: '{{ csrf_token }}'},
 				dataType:'json',
 				success:function(data){
 					if(data['valid'] == 'true')

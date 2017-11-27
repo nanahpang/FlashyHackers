@@ -62,9 +62,9 @@ urlpatterns = [
     # to INSTALLED_APPS to enable admin documentation:
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     #for messages
-    url(r'^ajax/sendmessages/', views.sendmessages, name='sendmessages'),
     url(r'^inbox/',TemplateView.as_view(template_name='MS/inbox.html')),
     url(r'^ajax/viewuserinbox/', views.viewuserinbox, name='viewuserinbox'),
+    url(r'^ajax/viewgroupinvitation', views.view_groupinvitation, name='view_groupinvitation'),
     url(r'^profile/',TemplateView.as_view(template_name='MS/profile_page.html')),
     # Uncomment the next line to enable the admin:
     #url(r'^admin/', include(admin.site.urls)),
