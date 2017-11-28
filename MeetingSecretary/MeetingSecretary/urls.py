@@ -41,11 +41,11 @@ urlpatterns = [
     url(r'^change/(?P<type>[a-z]+)/$', views.change, name='change'),
     url(r'^admin/', admin.site.urls),
     url(r'^creategroup/$', views.creategroup, name='creategroup'),
-    # url(r'^calendar/$', views.calendar, name='calendar'),
-    
+    url(r'^calendar/.*', TemplateView.as_view(template_name='MS/fullcalendar.html'), name='calendar'),
     url(r'^create_event/(?P<calendar_slug>[-\w]+)/$',
         CreateEventView.as_view(template_name='MS/create_event.html'),
         name='calendar_create_event'),
+    url(r'^groupcalendar/', views.api_group, name='api_group'),
     #url(r'^viewgroups/$',views.viewgroups, name='viewgroups'),
     url(r'^viewallgroups/', TemplateView.as_view(template_name='MS/viewallgroups.html'), name='viewallgroups'),
     url(r'^ajax/viewadmingroups/$',views.viewadmingroups, name='viewadmingroups'),

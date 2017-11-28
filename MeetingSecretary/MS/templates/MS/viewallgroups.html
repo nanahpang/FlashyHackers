@@ -34,6 +34,9 @@
     function opennew(groupname){		
 		  window.location = '/groups/' + groupname;
 	  }
+    function groupcalendar(groupname){
+      window.location = '/calendar/' + groupname;
+    }
   </script>
 
 <script>
@@ -50,7 +53,8 @@
         var admin = data['admin'];
         for (var i = 0; i < admin_count; ++i) {
           $("ol").append("<li>" + admin[i]+ "</li>");
-          $("ol").append("<button type='button'" + "onclick = opennew('" + admin[i] + "')" + ">view</button>");      
+          $("ol").append("<button type='button'" + "onclick = opennew('" + admin[i] + "')" + ">view</button>"); 
+          $("ol").append("<button type='button'" + "onclick = groupcalendar('" + admin[i] + "')" + ">view group calendar</button>");       
         }
         var member_count = data['member'].length;
 
