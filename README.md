@@ -5,7 +5,7 @@ This repo is the final project of team FlashyHackers in COMSW4156 (Advanced Soft
 ## Technology
 
 * Python3
-* Django >= 1.10
+* Django == 1.10
 * jQuery
 * Javascript
 * MySQL
@@ -23,7 +23,7 @@ This repo is the final project of team FlashyHackers in COMSW4156 (Advanced Soft
       pip install django-bower
       pip install django-directmessages
       pip install django-bootstrap3-datetimepicker
-
+      pip install django_jenkins
 * MySQL 
     
     Download from [MySQL Website](https://www.mysql.com/downloads/).
