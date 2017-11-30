@@ -1,5 +1,6 @@
 # Reference - https://github.com/GoogleCloudPlatform/continuous-deployment-demo/blob/appengine_travis_deploy/.travis.yml
-dist: trusty
+
+dist: xenial
 sudo: required
 language: python
 python:
@@ -18,17 +19,14 @@ python:
 #       - '$HOME/.sonar/cache' 
 
 before_install:
-- sudo apt-get install virtualenv
-- virtualenv -v myenv
-- source myenv/bin/activate
-
+- echo 'no before install'
 install:
 # Install the Python dependencies 
 - pip install -r requirements.txt
 
 before_script:
 #before
-- cp patch/widgets.py venv/lib/python3.5/site-packages/bootstrap3_datetime/widgets.py
+- cp patch/widgets.py /home/travis/virtualenv/python3.5.3/lib/python3.5/site-packages/bootstrap3_datetime/widgets.py
 - mysql -e 'CREATE DATABASE MeetingSecretary;'  
 
 script:
