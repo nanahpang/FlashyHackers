@@ -320,6 +320,130 @@ def searchtime(request):
     mimetype = 'application/json'
     return HttpResponse(result, mimetype)
 
+class Interval:
+      def __init__(self, s=0, e=0):
+          self.start = s
+          self.end = e
+def find_time(request):
+    start = request.POST.get('start_time')
+    end = request.POST.get('end_time')
+    group_name = request.GET.get('group_name')
+    #timezone = request.GET.get('timezone')
+    timezone = 'US/Eastern'
+    member_object = Membership.objects.filter(group = group_name)
+    members = []
+    response_data = []
+    for item in member_object:
+        data_json = item.member.username
+        members.append(data_json)
+    if not start or not end:
+        raise ValueError('Start and end parameters are required')
+    # version 2 of full calendar
+    # TODO: improve this code with date util package
+    if '-' in start:
+        def convert(ddatetime):
+            if ddatetime:
+                ddatetime = ddatetime.split(' ')[0]
+                return datetime.datetime.strptime(ddatetime, '%Y-%m-%d')
+    else:
+        def convert(ddatetime):
+            return datetime.datetime.utcfromtimestamp(float(ddatetime))
+
+    start = convert(start)
+    end = convert(end)
+    current_tz = False
+    if timezone and timezone in pytz.common_timezones:
+        # make start and end dates aware in given timezone
+        current_tz = pytz.timezone(timezone)
+        start = current_tz.localize(start)
+        end = current_tz.localize(end)
+    elif settings.USE_TZ:
+        # If USE_TZ is True, make start and end dates aware in UTC timezone
+        utc = pytz.UTC
+        start = utc.localize(start)
+        end = utc.localize(end)
+    print(start)
+    print(end)
+    if members:
+        # will raise DoesNotExist exception if no match
+        calendars = []
+        for item in members:
+            calendars.append(Calendar.objects.get(slug=item))
+
+        # calendars = [Calendar.objects.get(slug=calendar_slug)]
+    # if no calendar slug is given, get all the calendars
+    else:
+        calendars = Calendar.objects.all()
+    event_list = []
+    # i = 1
+    # if Occurrence.objects.all().count() > 0:
+    #     i = Occurrence.objects.latest('id').id + 1
+    for calendar in calendars:
+        # create flat list of events from each calendar
+        event_list += calendar.events.filter(start__lte=end).filter(
+            Q(end_recurring_period__gte=start) |
+            Q(end_recurring_period__isnull=True))
+    intervals = []
+    for event in event_list:
+        occurrences = event.get_occurrences(start, end)
+        for occurrence in occurrences:
+            event_start = occurrence.start
+            event_end = occurrence.end
+            if current_tz:
+                # make event start and end dates aware in given timezone
+                event_start = event_start.astimezone(current_tz)
+                event_end = event_end.astimezone(current_tz)
+            interval= Interval(event_start,event_end)
+            intervals.append(interval)
+    
+    intervals.sort(key = lambda x:x.start)
+    length=len(intervals)
+    res=[]
+    for i in range(length):
+        if res==[]:
+            res.append(intervals[i])
+        else:
+            size=len(res)
+            if res[size-1].start<=intervals[i].start<=res[size-1].end:
+                res[size-1].end=max(intervals[i].end, res[size-1].end)
+            else:
+                res.append(intervals[i])
+    if len(res) == 0:
+        response_data.append([start, end])
+        data = {'slots': response_data}
+        return JsonResponse(data, safe=False)
+
+    result = []
+    for item in res:
+        temp = [item.start,item.end]
+        result.append(temp)
+    length_r = len(result)
+    response_data=[]
+    
+    
+    for i in range(length_r+1):
+        if i==0:
+            if start >= res[i].start:
+                continue
+            else:
+               res_start = start
+               res_end = res[i].start
+
+        elif i==length_r:
+            if end <= res[i-1].end:
+                continue
+            else:
+                res_start = res[i-1].end
+                res_end = end
+        else:
+            res_start = res[i-1].end
+            res_end = res[i].start
+        response_data.append([res_start.isoformat(),res_end.isoformat()])
+    data = {'slots': response_data}
+    return JsonResponse(data, safe=False)
+
+
+
 #calendar management
 def calendar(request):
     return render(request, "MS/fullcalendar.html")

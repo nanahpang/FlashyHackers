@@ -72,6 +72,7 @@ urlpatterns = [
     #url(r'^admin/', include(admin.site.urls)),
     #for meeting
     url(r'^ajax/searchtime/', views.searchtime, name='searchtime'),
+    url(r'^ajax/find_time/', views.find_time, name='find_time'),
 ]
 #if settings.DEBUG:
 #    import debug_toolbar

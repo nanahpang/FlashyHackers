@@ -129,14 +129,16 @@ $(document).ready(function(){
 			var group_name = url.substring(index);
 			$.ajax({
 				type: "POST",
-				url: "/ajax/searchtime/",
+				url: "/ajax/find_time/",
 				data: {start_time, end_time, group_name, csrfmiddlewaretoken: '{{ csrf_token }}'},
 				dataType: 'json',
 				success: function(data) {
 					alert("success");
+					alert(data['slots']);
 					var slot_count = data['slots'].length;
 					alert(slot_count);
 					for (var i = 0; i < slot_count; ++i) {
+						alert(data['slots'][i]);
 						var start = data['slots'][i][0];
 						var end = data['slots'][i][1];
 						//add time converter;
