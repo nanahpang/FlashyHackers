@@ -352,8 +352,8 @@ def find_time(request):
     start = request.POST.get('start_time')
     end = request.POST.get('end_time')
     group_name = request.GET.get('group_name')
-    #timezone = request.GET.get('timezone')
-    timezone = 'US/Eastern'
+    timezone = request.GET.get('timezone')
+    #timezone = 'US/Eastern'
     member_object = Membership.objects.filter(group = group_name)
     members = []
     response_data = []

@@ -156,10 +156,23 @@
               var meeting = new Array();
               meeting['title'] = data[i]['meeting']['title'];
               meeting['description'] = data[i]['meeting']['description'];
-              $("#mi_list").append(
-                "<li class = 'list-group-item'>"+ data[i]['admin'] + " invites you to attend meeting " + data[i]['meeting']['title'] + 
-                ".<td><button type = 'button' class='btn btn-primary' onclick = meeting_handler('"+ meeting +"')"+">view</button></td></li>"
-                );              
+              //pass meeting invitation id
+              //meeting['id'] = data[i]['meeting']['id'];
+
+              var para = document.createElement("li");
+              para.setAttribute("class","list-group-item");
+              para.setAttribute("id", "mi" + meeting['id']);
+              para.innerHTML= data[i]['admin'] + " invites you to attend meeting " + data[i]['meeting']['title'];
+              
+
+              var bt = document.createElement("button");
+              bt.setAttribute("class", "btn btn-primary");
+              bt.setAttribute("id", "mi-bt" + meeting['id']);
+              bt.innerHTML="view details";
+              bt.onclick = function(){ meeting_handler(meeting); }; 
+              para.appendChild(bt);
+
+              $("#mi_list").append(para);
             }
             else if (status == 'AC'){
               $("#mi_list").append("<li class = 'list-group-item disabled'> You decide to attend meeting " + data[i]['meeting_title']+"of group " + data[i]['group'] + ".</li>");
@@ -219,9 +232,6 @@
   function meeting_handler(meeting) {
       var username = '{{user.username}}';
       var meeting = meeting;
-      alert(meeting);
-      alert(meeting['title']);
-      alert("meeting");
       //var title = meeting_title;
       $("#MeetingInvitationModal").on('show.bs.modal', function () {
         var modal = $(this);
