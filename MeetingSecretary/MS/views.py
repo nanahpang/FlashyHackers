@@ -1,58 +1,32 @@
+import pytz
 from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
 from django.contrib import messages
-# from oauth2client.contrib.django_orm import Storage
-# from MS.models import CredentialsModel
-
 # Create your views here.
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from MS.forms import SignUpForm, CreatePartialGroupForm
 from MS.models import Group, Membership
-from django.core import serializers
-
-try: import simplejson as json
-except ImportError: import json
-from schedule.models.calendars import CalendarManager, Calendar
 from django.utils import timezone
-from .messageHandler import MessageHandler
-messageHandler = MessageHandler()
 # Copy from schedule
-import datetime
-
-import dateutil.parser
-import pytz
 from django.conf import settings
-from django.core.urlresolvers import reverse
-from django.db.models import F, Q
+from django.db.models import Q
 from django.http import (
-    Http404, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse,
+    HttpResponseBadRequest, HttpResponseRedirect, JsonResponse,
 )
-from django.shortcuts import get_object_or_404
-from django.utils import timezone
-from django.utils.http import is_safe_url
-from django.utils.six.moves.urllib.parse import quote
-from django.views.decorators.http import require_POST
-from django.views.generic.base import TemplateResponseMixin
-from django.views.generic.detail import DetailView
-from django.views.generic.edit import (
-    CreateView, DeleteView, ModelFormMixin, ProcessFormView, UpdateView,
-)
-
-from schedule.forms import EventForm, OccurrenceForm
-from schedule.models import Calendar, Event, Occurrence
-from schedule.periods import weekday_names
-from schedule.settings import (
-    CHECK_EVENT_PERM_FUNC, CHECK_OCCURRENCE_PERM_FUNC, EVENT_NAME_PLACEHOLDER,
-    GET_EVENTS_FUNC, OCCURRENCE_CANCEL_REDIRECT, USE_FULLCALENDAR,
-)
-from schedule.utils import (
-    check_calendar_permissions, check_event_permissions,
-    check_occurrence_permissions, coerce_date_dict,
-)
+from schedule.models import Calendar, Occurrence
+try:
+    import simplejson as json
+except ImportError:
+    import json
+from .messageHandler import MessageHandler
+msgHandler = MessageHandler()
 
 def signup(request):
+    """
+    :param request: the request from user to sign-up a new account
+    :return: render a html template with form entries
+    """
     form = SignUpForm(request.POST)
     if form.is_valid():
         form.save()
@@ -74,6 +48,11 @@ def signup(request):
 
 
 def change(request, type):
+    """
+    :param request: request to change the information
+    :param type: what kind of information is the user changing
+    :return: render a html with changed form
+    """
     if request.method == 'GET':
         return render(request, 'MS/change.html', {'type': type})
     else:
@@ -101,6 +80,10 @@ def change(request, type):
 #group management part
 
 def creategroup(request):
+    """
+    :param request: request to create a group
+    :return: render a html with group creation information
+    """
     if request.method == 'POST':
         form = CreatePartialGroupForm(request.POST)
         if form.is_valid():
@@ -112,16 +95,20 @@ def creategroup(request):
             member = User.objects.get(username=request.user.username)
             p = Membership(group=group, member=member)
             p.save()
-            messages.success(request,'%s is created by %s' %(group.name, group.admin.username))
+            messages.success(request, '%s is created by %s' %(group.name, group.admin.username))
             return redirect('home')
     else:
         form = CreatePartialGroupForm()
     #if request.method == 'GET':
-    return render(request,'MS/creategroup.html',{'form': form})
+    return render(request, 'MS/creategroup.html', {'form': form})
 
 def viewadmingroups(request):
+    """
+    :param request: request to view groups as admin
+    :return: HTTP response to the groups view
+    """
     username = request.POST.get('username')
-    user = User.objects.get(username = username)
+    user = User.objects.get(username=username)
     admin_entries = Group.objects.filter(admin=user)
     member_entries = Membership.objects.filter(member=user)
     admin_results = []
@@ -139,9 +126,13 @@ def viewadmingroups(request):
 
 
 def showgroup(request):
+    """
+    :param request: request to show the groups that the user is in
+    :return: HTTP response for all his groups
+    """
     group_name = request.POST.get('group_name')
-    data = Membership.objects.filter(group = group_name)
-    admin = Group.objects.get(name = group_name).admin.username
+    data = Membership.objects.filter(group=group_name)
+    admin = Group.objects.get(name=group_name).admin.username
 
     results = []
     for item in data:
@@ -154,16 +145,20 @@ def showgroup(request):
     return HttpResponse(res, mimetype)
 
 def deletegroup(request):
+    """
+    :param request: request for a group deletion as admin
+    :return: HTTP response for deletion
+    """
     group_name = request.POST.get('groupid')
     operationuser = request.POST.get('operationuser')
-    q = Group.objects.get(name = group_name)
-    if q.admin.username == operationuser :
-         p  = Membership.objects.filter(group = group_name)
-         p.delete()
-         q.delete()
-         result = 'true'
-    else :
-         result = 'false'
+    q = Group.objects.get(name=group_name)
+    if q.admin.username == operationuser:
+        p = Membership.objects.filter(group=group_name)
+        p.delete()
+        q.delete()
+        result = 'true'
+    else:
+        result = 'false'
     res = {'valid': result}
     res = json.dumps(res)
     mimetype = 'application/json'
@@ -171,13 +166,17 @@ def deletegroup(request):
 
 
 def addnewmember(request):
+    """
+    :param request: request for adding a new group member to the group
+    :return: HTTP response for the adding request
+    """
     group_name = request.POST.get('group_name')
     member_id = request.POST.get('memberid')
     group_admin = request.POST.get('group_admin')
-    group = Group.objects.get(name = group_name)
-    if group.admin.username == group_admin :
+    group = Group.objects.get(name=group_name)
+    if group.admin.username == group_admin:
         from_user = group.admin
-        member = User.objects.filter(username = member_id)
+        member = User.objects.filter(username=member_id)
         if len(member) == 0:
             result = 'false'
         else:
@@ -186,7 +185,7 @@ def addnewmember(request):
                 result = 'true'
             else:
                 result = 'false'
-    else :
+    else:
         result = 'false'
     res = {'valid': result}
     res = json.dumps(res)
@@ -194,13 +193,17 @@ def addnewmember(request):
     return HttpResponse(res, mimetype)
 
 def deletemember(request):
+    """
+    :param request: request for deleting a group member
+    :return: HTTP response for deletion
+    """
     group_name = request.POST.get('group_name')
     member_id = request.POST.get('memberid')
     operationuser = request.POST.get('operationuser')
-    group = Group.objects.get(name = group_name)
+    group = Group.objects.get(name=group_name)
     if group.admin.username == operationuser and member_id != operationuser:
-        member = User.objects.get(username = member_id)
-        p = Membership.objects.get(group = group_name, member = member)
+        member = User.objects.get(username=member_id)
+        p = Membership.objects.get(group=group_name, member=member)
         p.delete()
         result = 'true'
     else:
@@ -211,24 +214,28 @@ def deletemember(request):
     return HttpResponse(res, mimetype)
 
 def accept(request):
+    """
+    :param request: posting request that accepts the invitation
+    :return: HTTP response for accepting
+    """
     group_name = request.POST.get('group_name')
     username = request.POST.get('username')
-    member = User.objects.get(username = username)
-    group = Group.objects.get(name = group_name)
-    
+    member = User.objects.get(username=username)
+    group = Group.objects.get(name=group_name)
+
     #let this new member join group
-    p = Membership(group = group, member = member)
+    p = Membership(group=group, member=member)
     p.save()
     result = 'true'
     
     #send notification to admin
-    admin = Group.objects.get(name = group_name).admin
+    admin = Group.objects.get(name=group_name).admin
     message = username+ ' has accepted your invitation of joining group '+ group_name
-    status = messageHandler.send_message(member, admin, message)
-    
+    status = msgHandler.send_message(member, admin, message)
+
     #modify all other invitations related to this event 'accepted'
-    messageHandler.set_invitation_accept(member, group)
-    
+    msgHandler.set_invitation_accept(member, group)
+
     #return result to ajax
     res = {'valid': result}
     res = json.dumps(res)
@@ -236,18 +243,22 @@ def accept(request):
     return HttpResponse(res, mimetype)
 
 def reject_group(request):
+    """
+    :param request: posting request that rejects the invitation
+    :return: HTTP response for rejecting
+    """
     group_name = request.POST.get('group_name')
     username = request.POST.get('username')
-    member = User.objects.get(username = username)
-    group = Group.objects.get(name = group_name)
+    member = User.objects.get(username=username)
+    group = Group.objects.get(name=group_name)
      
     #send notification to admin
-    admin = Group.objects.get(name = group_name).admin
+    admin = Group.objects.get(name=group_name).admin
     message = username+ ' has rejected your invitation of joining group '+ group_name
-    status = messageHandler.send_message(member, admin, message)
-    
+    status = msgHandler.send_message(member, admin, message)
+
     #modify all other invitations related to this event 'accepted'
-    messageHandler.set_invitation_reject(member, group)
+    msgHandler.set_invitation_reject(member, group)
     result = 'true'
     #return result to ajax
     res = {'valid': result}
@@ -258,7 +269,13 @@ def reject_group(request):
 #for messages
 
 def sendgroupinvitation(from_user, to_user, group):
-    status = messageHandler.send_groupinvitation(from_user, to_user, group)
+    """
+    :param from_user: the user that sends the invitation
+    :param to_user: the user that receive the invitation
+    :param group: the group that the from_user want the person to join in
+    :return: the status if the msg has been sent
+    """
+    status = msgHandler.send_groupinvitation(from_user, to_user, group)
     if status == 200:
         result = True
     else:
@@ -267,26 +284,34 @@ def sendgroupinvitation(from_user, to_user, group):
 
 
 def view_notification(request):
+    """
+    :param request: posting request to view the notification
+    :return: HTTP response for viewing
+    """
     username = request.POST.get('username')
-    user = User.objects.get(username = username)
-    messages_entries = messageHandler.get_unread_message(user)
-    messages = []
+    user = User.objects.get(username=username)
+    messages_entries = msgHandler.get_unread_message(user)
+    messages_list = []
     for item in messages_entries:
         item.read_at = timezone.now()
         item.save()
-        message = {
+        msg = {
             'content' : item.content,
             'sent_at' : item.sent_at.isoformat()
         }
-        messages.append(message)
-    res = json.dumps(messages)
+        messages.append(msg)
+    res = json.dumps(messages_list)
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
 
 def view_groupinvitation(request):
+    """
+    :param request: request to view the group invitation from an admin
+    :return: HTTP response for viewing the group invitation
+    """
     username = request.POST.get('username')
-    user = User.objects.get(username = username)
-    invitation_entries = messageHandler.get_invitation(user)
+    user = User.objects.get(username=username)
+    invitation_entries = msgHandler.get_invitation(user)
     invitations = []
     for item in invitation_entries:
         invitation = {
@@ -303,6 +328,10 @@ def view_groupinvitation(request):
 
 #calendar management
 def calendar(request):
+    """
+    :param request: request to access the personal calendar view
+    :return: render a HTML template for the calendar
+    """
     return render(request, "MS/fullcalendar.html")
     # username = request.POST.get('username')
     # user = User.objects.get(username = username)
@@ -312,38 +341,61 @@ def calendar(request):
     # # return render(request,'./fullcalendar.html','calendar_slug'=username)
     # return HttpResponseRedirect(url)
 def groupcalendar(request):
+    """
+    :param request: admin's request to get the calendar for the whole group
+    :return: render a HTML calendar with events of the whole group
+    """
     return render(request, "MS/groupcalendar.html")
 
 def api_group(request):
+    """
+    :param request: request to connect to the api that enables to generate the json for all group members
+    :return: render a JsonResponse
+    """
     start = request.GET.get('start')
     end = request.GET.get('end')
     timezone = request.GET.get('timezone')
     group_name = request.GET.get('group_name')
-    data = Membership.objects.filter(group = group_name)
+    data = Membership.objects.filter(group=group_name)
     results = []
     for item in data:
         data_json = item.member.username
         results.append(data_json)
     try:
         response_data = _api_group(start, end, results, timezone)
-    except (ValueError, Calendar.DoesNotExist) as e:
-        return HttpResponseBadRequest(e)
+    except (ValueError, Calendar.DoesNotExist) as exp:
+        return HttpResponseBadRequest(exp)
     return JsonResponse(response_data, safe=False)
 
 def _api_group(start, end, calendar_slug, timezone):
+    """
+    :param start: start time of the event
+    :param end: end time of the event
+    :param calendar_slug: username
+    :param timezone: timezone
+    :return: response group data to api_group function
+    """
 
     if not start or not end:
         raise ValueError('Start and end parameters are required')
     # version 2 of full calendar
     # TODO: improve this code with date util package
     if '-' in start:
-        def convert(ddatetime):
-            if ddatetime:
-                ddatetime = ddatetime.split(' ')[0]
-                return datetime.datetime.strptime(ddatetime, '%Y-%m-%d')
+        def convert(date_time):
+            """
+            :param date_time: datetime
+            :return: formatted datetime
+            """
+            if date_time:
+                datetime = date_time.split(' ')[0]
+                return datetime.datetime.strptime(date_time, '%Y-%m-%d')
     else:
-        def convert(ddatetime):
-            return datetime.datetime.utcfromtimestamp(float(ddatetime))
+        def convert(datetime):
+            """
+            :param date_time: datetime
+            :return: formatted datetime
+            """
+            return datetime.datetime.utcfromtimestamp(float(datetime))
 
     start = convert(start)
     end = convert(end)
@@ -351,13 +403,13 @@ def _api_group(start, end, calendar_slug, timezone):
     if timezone and timezone in pytz.common_timezones:
         # make start and end dates aware in given timezone
         current_tz = pytz.timezone(timezone)
-        start = current_tz.localize(start)
-        end = current_tz.localize(end)
+        start = current_tz.localize(start, False)
+        end = current_tz.localize(end, False)
     elif settings.USE_TZ:
         # If USE_TZ is True, make start and end dates aware in UTC timezone
         utc = pytz.UTC
-        start = utc.localize(start)
-        end = utc.localize(end)
+        start = utc.localize(start, False)
+        end = utc.localize(end, False)
 
     if calendar_slug:
         # will raise DoesNotExist exception if no match
@@ -433,5 +485,3 @@ def _api_group(start, end, calendar_slug, timezone):
                 'cancelled': occurrence.cancelled,
             })
     return response_data
-
-
