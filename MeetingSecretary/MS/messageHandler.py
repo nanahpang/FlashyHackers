@@ -59,3 +59,17 @@ class MessageHandler():
 
     def get_meetinginvitation(self, user) :
         return MeetingInvitation.objects.all().filter(recipient = user) 
+
+    def set_meetinginvitation_reject(self, user, group, meeting):
+        invitation_entries = MeetingInvitation.objects.all().filter(recipient = user, group = group, meeting = meeting) 
+        for item in invitation_entries:
+            item.status = 'RJ'
+            item.save()
+        return True
+
+    def set_meetinginvitation_accept(self, user, group, meeting):
+        invitation_entries = MeetingInvitation.objects.all().filter(recipient = user, group = group, meeting = meeting) 
+        for item in invitation_entries:
+            item.status = 'AC'
+            item.save()
+        return True
