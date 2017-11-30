@@ -1,6 +1,5 @@
 # Reference - https://github.com/GoogleCloudPlatform/continuous-deployment-demo/blob/appengine_travis_deploy/.travis.yml
-
-dist: xenial
+dist: trusty
 sudo: required
 language: python
 python:
