@@ -20,6 +20,7 @@ from .messageHandler import MessageHandler
 messageHandler = MessageHandler()
 # Copy from schedule
 import datetime
+import time
 
 import dateutil.parser
 import pytz
@@ -300,6 +301,24 @@ def view_groupinvitation(request):
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
 
+
+#test search available time
+def searchtime(request):
+    group_name = request.POST.get("group_name")
+    start_time = request.POST.get("start_time")
+    end_time = request.POST.get("end_time")
+    res = []
+    for i in range(2):
+        start = timezone.now().isoformat()
+        end = timezone.now().isoformat()
+        slot = []
+        slot.append(start)
+        slot.append(end)
+        res.append(slot)
+    result = {'slots' : res}
+    result = json.dumps(result)
+    mimetype = 'application/json'
+    return HttpResponse(result, mimetype)
 
 #calendar management
 def calendar(request):

@@ -112,7 +112,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'MeetingSecretary',
         'USER': 'root',
-        'PASSWORD': 'root',
+        'PASSWORD': '123456',
         'HOST': '',
         'PORT': '',
     }

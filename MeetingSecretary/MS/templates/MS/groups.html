@@ -22,6 +22,28 @@ Add a new member: <form id = "addnewmember" method = "POST">
 <input type="text" id = "deletename">
 <input type="submit" value = "delete a member">
 </form>   
+<form  id ="searchtime">
+	<div class="form-row align-items-center">
+	  <div class="col-auto">
+		<label class="mr-sm-2" for="inlineFormInputStartTime">Start Time: </label>
+		<input type="text" class="form-control" id="inlineFormInputStartTime" value = "2017-11-25" required>
+	  </div>
+	  <div class="col-auto">
+		<label class="mr-sm-2" for="inlineFormInputEndTime">End Time: </label>
+		<div class="input-group mb-2 mb-sm-0">
+		  <input type="text" class="form-control" id="inlineFormInputEndTime" value = "2017-11-26" required>
+		</div>
+	  </div>
+	  <div class="col-auto">
+		<button type="submit" class="btn btn-primary">Search available time slots</button>
+	  </div>
+	</div>
+  </form>
+
+  <ul class="list-group" id="time-slots-list">
+	<li class="list-group-item">Cras justo odio</li>
+
+  </ul>
 <script>
 $(document).ready(function(){
 		var url = window.location.href;
@@ -90,6 +112,33 @@ $(document).ready(function(){
 						alert("User "+ memberid + " has been removed from group " + group_name + "! Please refresh the page to see your group.");
 					else
 						alert("You have no authorization to delete people to this group.")
+				}
+			});
+		});
+
+
+		$("#searchtime").submit(function(event){
+			event.preventDefault();
+			var start_time = document.getElementById("inlineFormInputStartTime").value;
+			var end_time = document.getElementById("inlineFormInputEndTime").value;
+			var url = window.location.href;
+			var index = url.indexOf("groups") + 7;
+			var group_name = url.substring(index);
+			$.ajax({
+				type: "POST",
+				url: "/ajax/searchtime/",
+				data: {start_time, end_time, group_name, csrfmiddlewaretoken: '{{ csrf_token }}'},
+				dataType: 'json',
+				success: function(data) {
+					alert("success");
+					var slot_count = data['slots'].length;
+					alert(slot_count);
+					for (var i = 0; i < slot_count; ++i) {
+						var start = data['slots'][i][0];
+						var end = data['slots'][i][1];
+						//add time converter;
+						$("#time-slots-list").append("<li class = 'list-group-item list-group-item-action'>"+ start + "-" + end +"</li>");
+					}
 				}
 			});
 		});
