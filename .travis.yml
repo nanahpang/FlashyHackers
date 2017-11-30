@@ -1,0 +1,37 @@
+# Reference - https://github.com/GoogleCloudPlatform/continuous-deployment-demo/blob/appengine_travis_deploy/.travis.yml
+
+dist: trusty
+sudo: required
+language: python
+python:
+- '3.5'
+
+# Uncomment this section to enable sonarqube. 
+# Be sure to uncomment the script in the script section as well 
+# addons:
+#     sonarqube: 
+#         organization: "" # the key of the org you chose at step #3 
+#         token:
+#             secure: "" 
+#
+# cache: 
+#     directories: 
+#       - '$HOME/.sonar/cache' 
+
+before_install:
+- echo 'no before install'
+install:
+# Install the Python dependencies 
+- pip install -r requirements.txt
+
+before_script:
+#before
+- cp patch/widgets.py /home/travis/virtualenv/python3.5.3/lib/python3.5/site-packages/bootstrap3_datetime/widgets.py
+- mysql -e 'CREATE DATABASE MeetingSecretary;'  
+
+script:
+- python MeetingSecretary/manage.py test 
+
+services:
+- mysql
+# - sonar-scanner

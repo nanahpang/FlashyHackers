@@ -7,82 +7,94 @@
 {% endblock %}
 
 {% block content %}
-<h2></h2>
-<h4>Administrator: </h4>
-<p>Members: </p>
-<ol>
-</ol>
-Add a new member: <form id = "addnewmember" method = "POST">
-	{% csrf_token %}
-<input type="text" id = "newmembername">
-<input type="submit" value = "send invitation">
-</form>
-<form id = "deletemember" method = "POST">
-	{% csrf_token %}
-<input type="text" id = "deletename">
-<input type="submit" value = "delete a member">
-</form>   
-<form  id ="searchtime">
-	<div class="form-row align-items-center">
-	  <div class="col-auto">
-		<label class="mr-sm-2" for="inlineFormInputStartTime">Start Time: </label>
-		<input type="text" class="form-control" id="inlineFormInputStartTime" value = "2017-11-25" required>
-	  </div>
-	  <div class="col-auto">
-		<label class="mr-sm-2" for="inlineFormInputEndTime">End Time: </label>
-		<div class="input-group mb-2 mb-sm-0">
-		  <input type="text" class="form-control" id="inlineFormInputEndTime" value = "2017-11-26" required>
-		</div>
-	  </div>
-	  <div class="col-auto">
-		<button type="submit" class="btn btn-primary">Search available time slots</button>
-	  </div>
+<div class="container">
+	<div class = "row" id="group_name">
 	</div>
-  </form>
-
-  <ul class="list-group" id="time-slots-list">
-	<li class="list-group-item">Available Time:</li>
-
-  </ul>
-  <div class="row">
-		<button class="btn btn-primary" id="add-a-meeting" data-toggle="modal" data-target="#exampleModal" data-whatever="group_name">Add a meeting</button>
-</div>
-<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">New meeting</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <form>
-          <div class="form-group">
-            <label for="title" class="col-form-label">Title:</label>
-            <input type="text" class="form-control" id="title" value="study">
-          </div>
-          <div class="form-group">
-            <label for="start-time" class="col-form-label">Start time:</label>
-            <input class="form-control" id="start-time" value="2017-12-04"></input>
-		  </div>
-		  <div class="form-group">
-				<label for="end-time" class="col-form-label">End time:</label>
-				<input class="form-control" id="end-time" value="2017-12-05"></input>
+	<div class="row">
+		<div class="col-md">
+			<h4 id="admin-name">Administrator: </h4>
+			<p>Members: </p>
+			<ol>
+			</ol>
+			Add a new member: <form id = "addnewmember" method = "POST">
+				{% csrf_token %}
+			<input type="text" id = "newmembername">
+			<input type="submit" value = "send invitation">
+			</form>
+			<form id = "deletemember" method = "POST">
+				{% csrf_token %}
+			<input type="text" id = "deletename">
+			<input type="submit" value = "delete a member">
+			</form>   
+			<form  id ="searchtime">
+				<div class="form-row align-items-center">
+					<div class="col-auto">
+					<label class="mr-sm-2" for="inlineFormInputStartTime">Start Time: </label>
+					<input type="text" class="form-control" id="inlineFormInputStartTime" value = "2017-11-25" required>
+					</div>
+					<div class="col-auto">
+					<label class="mr-sm-2" for="inlineFormInputEndTime">End Time: </label>
+					<div class="input-group mb-2 mb-sm-0">
+						<input type="text" class="form-control" id="inlineFormInputEndTime" value = "2017-11-26" required>
+					</div>
+					</div>
+					<div class="col-auto">
+					<button type="submit" class="btn btn-primary">Search available time slots</button>
+					</div>
+				</div>
+				</form>
+			
+				<ul class="list-group" id="time-slots-list">
+				<li class="list-group-item">Available Time:</li>
+			
+				</ul>
+				<div class="row">
+					<button class="btn btn-primary" id="add-a-meeting" data-toggle="modal" data-target="#exampleModal" data-whatever="group_name">Add a meeting</button>
+			</div>
+			<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+				<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">New meeting</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					</div>
+					<div class="modal-body">
+					<form>
+						<div class="form-group">
+						<label for="title" class="col-form-label">Title:</label>
+						<input type="text" class="form-control" id="title" value="study">
+						</div>
+						<div class="form-group">
+						<label for="start-time" class="col-form-label">Start time:</label>
+						<input class="form-control" id="start-time" value="2017-12-04"></input>
+						</div>
+						<div class="form-group">
+							<label for="end-time" class="col-form-label">End time:</label>
+							<input class="form-control" id="end-time" value="2017-12-05"></input>
+					</div>
+					<div class="form-group">
+							<label for="description" class="col-form-label">Description: </label>
+							<textarea class="form-control" id="description" value="study"></textarea>
+					</div>
+					</form>
+					</div>
+					<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" id="sendinvitation">Send Invitation to your member!</button>
+					</div>
+				</div>
+				</div>
+			</div>
 		</div>
-		<div class="form-group">
-				<label for="description" class="col-form-label">Description: </label>
-				<textarea class="form-control" id="description" value="study"></textarea>
+		<div class="col-md" id = "meeting-cards">
+				
 		</div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" id="sendinvitation">Send Invitation to your member!</button>
-      </div>
-    </div>
-  </div>
+	</div>
 </div>
+<h2></h2>
+
 
 <script>
 	$("#sendinvitation").on('click', function(){
@@ -108,14 +120,16 @@ $(document).ready(function(){
 		var url = window.location.href;
 		var index = url.indexOf("groups") + 7;
 		var group_name = url.substring(index);
-		$("h2").append("<h2>" + group_name + "</h2>");
+		var groupName = document.createElement("h2");
+		groupName.innerHTML = group_name; 
+		$("#group_name").append(groupName);
 		$.ajax({
 			type: 'POST',
 			url: '/ajax/showgroup/',
 			data: {group_name, csrfmiddlewaretoken:'{{ csrf_token}}'},
 			dataType: 'json',
 			success: function(data){
-				$("h4").append(data['admin']);
+				$("#admin-name").append(data['admin']);
 				var count = data['member'].length;
 				for (var i = 0; i < count; ++i)
 					$("ol").append("<li>" + data['member'][i]+ "</li>");
@@ -124,6 +138,48 @@ $(document).ready(function(){
 					//+ "id = " + "'member"+ data[i] + "'"
 					//+">delete</button>"+"</li>");
 
+			}
+		});
+
+		$.ajax({
+			type: 'POST',
+			url: '/ajax/showmeeting/',
+			data: {group_name, csrfmiddlewaretoken:'{{ csrf_token}}'},
+			dataType: 'json',
+			success: function(data){
+				var meeting_count = data.length;
+				if (meeting_count == 0) {
+					var para = document.createElement('p');
+					para.innerHTML="Your group has no meeting for now";
+					$("#meeting-cards").append(para);
+				}
+				else {
+					for (var i = 0; i < meeting_count; ++i) {
+						title = data[i]['title'];
+						description = data[i]['description'];
+						start_time = data[i]['start_time'];
+						end_time = data[i]['end_time'];
+						var card = document.createElement('div');
+						card.setAttribute("class","card");
+						card.setAttribute("style","width: 20rem;");
+						var card_body = document.createElement('div');
+						card_body.setAttribute("class","card-body");
+						var meeting_title = document.createElement('h4');
+						meeting_title.setAttribute("class","card-title");
+						meeting_title.innerHTML = title;
+						var meeting_time = document.createElement('p');
+						meeting_time.setAttribute("class","card-text");
+						meeting_time.innerHTML=start_time + '-' + end_time;
+						var meeting_description = document.createElement('p');
+						meeting_description.setAttribute("class","card-text");
+						meeting_description.innerHTML=description;
+						card_body.appendChild(meeting_title);
+						card_body.appendChild(meeting_time);
+						card_body.appendChild(meeting_description);
+						card.appendChild(card_body);
+						$("#meeting-cards").append(card);
+					}
+				}
 			}
 		});
 	});

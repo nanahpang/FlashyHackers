@@ -153,7 +153,8 @@ def find_all_members(group, keepAdmin):
             if item.member != admin:
                 result.append(item.member)
         return result
-        
+
+
 
 def showgroup(request):
     group_name = request.POST.get('group_name')
@@ -351,7 +352,6 @@ def reject_group(request):
     return HttpResponse(res, mimetype)
 
 #for messages
-
 def sendgroupinvitation(from_user, to_user, group):
     status = messageHandler.send_groupinvitation(from_user, to_user, group)
     if status == 200:
@@ -568,6 +568,23 @@ def add_meeting(request):
             result = 'false'
     data = {'valid': result}
     data = json.dumps(data)
+    mimetype = 'application/json'
+    return HttpResponse(data, mimetype)
+
+def show_meetings(request):
+    group_name = request.POST.get('group_name')
+    group = Group.objects.get(name = group_name)
+    meeting_list = Meeting.objects.all().filter(group = group)
+    result = []
+    for item in meeting_list:
+        res = {
+            'title' : item.title,
+            'description' : item.description,
+            'start_time' : item.start_time.isoformat(),
+            'end_time' : item.end_time.isoformat()
+        }
+        result.append(res)
+    data = json.dumps(result)
     mimetype = 'application/json'
     return HttpResponse(data, mimetype)
 
