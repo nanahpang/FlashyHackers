@@ -21,11 +21,11 @@
       <div class="col-md">
           <h3>Group Invitations</h3>
           <ul class = "list-group" id="gi_list">    
-              <div class="modal fade" id="GroupInvitationModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal fade" id="GroupInvitationModal" tabindex="-1" role="dialog" aria-labelledby="GroupModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                   <div class="modal-content">
                     <div class="modal-header">
-                      <h5 class="modal-title" id="exampleModalLabel">Group Invitation</h5>
+                      <h5 class="modal-title" id="GroupModalLabel">Group Invitation</h5>
                       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                       </button>
@@ -44,7 +44,29 @@
             </ul>>
       </div>
       <div class="col-md">
-        <h3>Meeting Invitations</h3>>
+          <h3>Meeting Invitations</h3>
+          <ul class = "list-group" id="mi_list">    
+              <div class="modal fade" id="MeetingInvitationModal" tabindex="-1" role="dialog" aria-labelledby="MeetingModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="MeetingModalLabel">Meeting</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-success" data-dismiss="modal" id = "accept_mi">Accept</button>
+                        <button type="button" class="btn btn-outline-danger" data-dismiss="modal" id = "reject_mi">Reject</button>
+                        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ul>>
       </div>
     </div>
   </div>
@@ -114,6 +136,41 @@
         }        
       }
     });
+
+    /******************************/
+    /* read all meeting invitations */
+    /******************************/
+    $.ajax({
+      type: 'POST',
+      url: '/ajax/viewmeetinginvitation/',
+      data: {username, csrfmiddlewaretoken:'{{ csrf_token}}'},
+      dataType: 'json',
+      success: function(data){
+        var invitation_count = data.length;
+        if (invitation_count == 0) 
+          $("#mi_list").append("You have no invitations for now. Take a break.  :-)");
+        else {
+          for (var i = 0; i < invitation_count; ++i) {
+            var status = data[i]['status'];
+            if (status == 'NO') {
+              var meeting = new Array();
+              meeting['title'] = data[i]['meeting']['title'];
+              meeting['description'] = data[i]['meeting']['description'];
+              $("#mi_list").append(
+                "<li class = 'list-group-item'>"+ data[i]['admin'] + " invites you to attend meeting " + data[i]['meeting']['title'] + 
+                ".<td><button type = 'button' class='btn btn-primary' onclick = meeting_handler('"+ meeting +"')"+">view</button></td></li>"
+                );              
+            }
+            else if (status == 'AC'){
+              $("#mi_list").append("<li class = 'list-group-item disabled'> You decide to attend meeting " + data[i]['meeting_title']+"of group " + data[i]['group'] + ".</li>");
+            }
+            else if (status == 'RJ'){
+              $("#mi_list").append("<li class = 'list-group-item disabled'> You have rejected to attend meeting " + data[i]['meeting_title']+" of group " + data[i]['group'] + ".</li>");
+            }
+          }
+        }        
+      }
+    });
   });
 
      
@@ -156,6 +213,51 @@
           });
       });
       $("#GroupInvitationModal").modal('show');	
+      
+  }
+
+  function meeting_handler(meeting) {
+      var username = '{{user.username}}';
+      var meeting = meeting;
+      alert(meeting);
+      alert(meeting['title']);
+      alert("meeting");
+      //var title = meeting_title;
+      $("#MeetingInvitationModal").on('show.bs.modal', function () {
+        var modal = $(this);
+        modal.find('.modal-body').text('Will you accept the invitation from group '+ meeting['title'] + '?');
+          $("#accept_gi").on('click', function () {     
+            $("#MeetingInvitationModal").modal('hide');       
+            $.ajax({
+                type: 'POST',
+                url: '/ajax/accept/',
+                data: {username, group_name, csrfmiddlewaretoken:'{{ csrf_token}}'},
+                dataType: 'json',
+                success: function(data){
+                  if(data['valid'] == 'true')
+                      alert("You have joined group "+ groupname + " successfully! Please refresh to check your groups.");
+                  else 
+                    alert("Something happened. :(");				
+                }
+            }); 
+          });
+
+          $("#reject_gi").on('click', function () {            
+            $.ajax({
+                type: 'POST',
+                url: '/ajax/rejectgroup/',
+                data: {username, group_name, csrfmiddlewaretoken:'{{ csrf_token}}'},
+                dataType: 'json',
+                success: function(data){
+                  if(data['valid'] == 'true')
+                      alert("You have rejected the invitation of group "+ groupname + " .  :-(");
+                  else 
+                    alert("Something happened. :(");				
+                }
+            }); 
+          });
+      });
+      $("#MeetingInvitationModal").modal('show');	
       
   }
 </script>

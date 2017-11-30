@@ -44,7 +44,26 @@ class GroupInvitation(models.Model):
 			self.sent_at = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
 		super(GroupInvitation, self).save(**kwargs)
 
+class MeetingInvitation(models.Model):
+	sender = models.ForeignKey(User, related_name = 'send_mi')
+	recipient = models.ForeignKey(User, related_name = 'received_mi')
+	group = models.ForeignKey(Group, related_name = 'group_mi')
+	sent_at = models.DateTimeField(null=True, blank=True)
+	meeting = models.ForeignKey(Meeting, related_name = 'mi')
+	ACCEPT = 'AC'
+	REJECT = 'RJ'
+	NORESPONSE = 'NO'
+	STATUS_OF_MESSAGES_CHOICES = (
+        (ACCEPT, 'Accepted'),
+        (REJECT, 'Rejected'),
+        (NORESPONSE, 'No response')
+    )
+	status = models.CharField(max_length = 2, choices = STATUS_OF_MESSAGES_CHOICES, default = NORESPONSE)
 
+	def save(self, **kwargs):
+		if not self.id:
+			self.sent_at = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+		super(MeetingInvitation, self).save(**kwargs)
 class Message(models.Model):
 	content = models.CharField(max_length = 140)
 	sender = models.ForeignKey(User, related_name = 'send_dm')

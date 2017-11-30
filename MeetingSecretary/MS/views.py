@@ -9,7 +9,7 @@ from django.contrib import messages
 # Create your views here.
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from MS.forms import SignUpForm, CreatePartialGroupForm
-from MS.models import Group, Membership
+from MS.models import Group, Membership, Meeting
 from django.core import serializers
 
 try: import simplejson as json
@@ -138,6 +138,22 @@ def viewadmingroups(request):
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
 
+def find_all_members(group, keepAdmin):
+    ##include admin
+    data = Membership.objects.filter(group = group)
+    result = []
+    if (keepAdmin == True):
+        for item in data:
+            result.append(item.member)
+        return result
+    else:
+        result = []
+        admin = Group.objects.get(name = group.name).admin
+        for item in data:
+            if item.member != admin:
+                result.append(item.member)
+        return result
+        
 
 def showgroup(request):
     group_name = request.POST.get('group_name')
@@ -266,6 +282,14 @@ def sendgroupinvitation(from_user, to_user, group):
         result = False
     return result
 
+def sendmeetinginvitation(from_user, to_user, group, meeting):
+    status = messageHandler.send_meetinginvitation(from_user, to_user, group, meeting)
+    if status == 200:
+        result = True
+    else:
+        result = False
+    return result
+
 
 def view_notification(request):
     username = request.POST.get('username')
@@ -287,7 +311,7 @@ def view_notification(request):
 def view_groupinvitation(request):
     username = request.POST.get('username')
     user = User.objects.get(username = username)
-    invitation_entries = messageHandler.get_invitation(user)
+    invitation_entries = messageHandler.get_groupinvitation(user)
     invitations = []
     for item in invitation_entries:
         invitation = {
@@ -442,8 +466,56 @@ def find_time(request):
     data = {'slots': response_data}
     return JsonResponse(data, safe=False)
 
+def add_meeting(request):
+    group_name = request.POST.get('group_name')
+    title = request.POST.get('title')
+    description = request.POST.get('description')
+    start_time = request.POST.get('start_time')
+    end_time = request.POST.get('end_time')
+    group = Group.objects.get(name = group_name)
+    admin = group.admin
+    #find time convertor
+    ##save this meeting into meeting table
+    p = Meeting(group = group, title = title, description = description, start_time = start_time, end_time = end_time)
+    p.save()
 
+    ##send invitation to all member
+    ###find all member
+    memberlist = find_all_members(group, False)
+    for member in memberlist:
+        status = sendmeetinginvitation(admin, member, group, p)
+        if status == True:
+            result = 'true'
+        else:
+            result = 'false'
+    data = {'valid': result}
+    data = json.dumps(data)
+    mimetype = 'application/json'
+    return HttpResponse(data, mimetype)
 
+def view_meetinginvitation(request):
+    username = request.POST.get('username')
+    user = User.objects.get(username = username)
+    invitation_entries = messageHandler.get_meetinginvitation(user)
+    invitations = []
+    for item in invitation_entries:
+        invitation = {
+            'group':item.group.name,
+            'admin': item.sender.username,
+            'status' : item.status,
+            'meeting' : {
+                'group': item.meeting.group.name,
+                'title': item.meeting.title,
+                #'start_time': item.meeting.start_time,
+                #'end_time': item.meeting.end_time,
+                'description': item.meeting.description,
+            },    
+            'sent_at' : item.sent_at.isoformat()
+        }
+        invitations.append(invitation)
+    res = json.dumps(invitations)
+    mimetype = 'application/json'
+    return HttpResponse(res, mimetype)
 #calendar management
 def calendar(request):
     return render(request, "MS/fullcalendar.html")
