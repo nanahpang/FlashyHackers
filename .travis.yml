@@ -28,7 +28,11 @@ install:
 before_script:
 #before
 - cp patch/widgets.py lib/bootstrap3_datetime
+- cp mysql -e 'CREATE DATABASE MeetingSecretary;'  
 
 script:
-- echo "No Script to run" 
+- 
+
+services:
+- mysql
 # - sonar-scanner
