@@ -156,6 +156,9 @@
               var meeting = new Array();
               meeting['title'] = data[i]['meeting']['title'];
               meeting['description'] = data[i]['meeting']['description'];
+              meeting['group'] = data[i]['meeting']['group'];
+              meeting['start_time'] = data[i]['meeting']['start_time'];
+              meeting['end_time'] = data[i]['meeting']['end_time'];
               //pass meeting invitation id
               //meeting['id'] = data[i]['meeting']['id'];
 
@@ -229,28 +232,43 @@
       
   }
 
+  function meeting_accept(meeting,username) {
+    var meeting_info = new Array();
+    meeting_info['title'] = meeting['title'];
+    meeting_info['description'] = meeting['description'];
+    meeting_info['group'] = meeting['group'];    
+    //alert(meeting_info['group']);
+     
+  }
   function meeting_handler(meeting) {
       var username = '{{user.username}}';
-      var meeting = meeting;
-      //var title = meeting_title;
       $("#MeetingInvitationModal").on('show.bs.modal', function () {
         var modal = $(this);
-        modal.find('.modal-body').text('Will you accept the invitation from group '+ meeting['title'] + '?');
-          $("#accept_gi").on('click', function () {     
-            $("#MeetingInvitationModal").modal('hide');       
-            $.ajax({
-                type: 'POST',
-                url: '/ajax/accept/',
-                data: {username, group_name, csrfmiddlewaretoken:'{{ csrf_token}}'},
-                dataType: 'json',
-                success: function(data){
-                  if(data['valid'] == 'true')
-                      alert("You have joined group "+ groupname + " successfully! Please refresh to check your groups.");
-                  else 
-                    alert("Something happened. :(");				
-                }
-            }); 
-          });
+        modal.find('.modal-body').text('Will you attend the meeting ' + meeting['title'] + ' from group ' + meeting['group'] + '?'
+        + "The time is from " + meeting['start_time'] + " to " + meeting['end_time']);
+        var bt_accept = document.getElementById('accept_mi');
+        bt_accept.onclick =  function () {     
+          $("#MeetingInvitationModal").modal('hide');  
+          var meeting_info = [];
+          meeting_info.push(meeting['title']);
+          meeting_info.push(meeting['description']);
+          meeting_info.push(meeting['group']);
+          meeting_info.push(meeting['start_time']);
+          meeting_info.push(meeting['end_time']);
+          $.ajax({
+            type: 'POST',
+            url: '/ajax/acceptmeeting/',
+            data: {'username': username, 'meeting_info[]': meeting_info, csrfmiddlewaretoken:'{{ csrf_token}}'},
+            dataType: 'json',
+            traditional: true,
+            success: function(data){
+              if(data['valid'] == 'true')
+                  alert("This meeting has been added to your canlendar "+ " successfully! You can see that in your canlendar.");
+              else 
+                alert("Something happened. :(");				
+            }
+        });
+        };
 
           $("#reject_gi").on('click', function () {            
             $.ajax({

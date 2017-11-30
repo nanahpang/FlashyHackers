@@ -75,6 +75,7 @@ urlpatterns = [
     url(r'^ajax/find_time/', views.find_time, name='find_time'),
     url(r'^ajax/addmeeting/', views.add_meeting, name='add_meeting'),
     url(r'^ajax/viewmeetinginvitation/', views.view_meetinginvitation, name='view_meetinginvitation'),
+    url(r'^ajax/acceptmeeting/', views.accept_meeting, name='accept_meeting'),
 ]
 #if settings.DEBUG:
 #    import debug_toolbar

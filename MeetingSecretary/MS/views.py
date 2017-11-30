@@ -252,6 +252,36 @@ def accept(request):
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
 
+#meeting_info[title, description, group, start_time, end_time]
+def accept_meeting(request):
+    meeting_info = request.POST.getlist('meeting_info[]')
+    #meeting_info = json.loads(meeting_info)
+    username = request.POST.get('username')
+    #print(username)
+    print(meeting_info)
+    #return result to ajax
+    group_name = meeting_info[2]
+    title = meeting_info[0]
+    description = meeting_info[1]
+    start_time = meeting_info[3]
+    end_time = meeting_info[4]
+    #send notification to admin
+    admin = Group.objects.get(name = group_name).admin
+    member = User.objects.get(username = username)
+    message = username+ ' has accepted your invitation of joining group '+ group_name
+    status = messageHandler.send_message(member, admin, message)
+    if status == 200:
+        result = 'true'
+    else:
+        retult = 'false'
+    #store an event of that user
+
+
+    #increase attendees
+    res = {'valid': result}
+    res = json.dumps(res)
+    mimetype = 'application/json'
+    return HttpResponse(res, mimetype)
 def reject_group(request):
     group_name = request.POST.get('group_name')
     username = request.POST.get('username')
@@ -506,8 +536,8 @@ def view_meetinginvitation(request):
             'meeting' : {
                 'group': item.meeting.group.name,
                 'title': item.meeting.title,
-                #'start_time': item.meeting.start_time,
-                #'end_time': item.meeting.end_time,
+                'start_time': item.meeting.start_time.isoformat(),
+                'end_time': item.meeting.end_time.isoformat(),
                 'description': item.meeting.description,
             },    
             'sent_at' : item.sent_at.isoformat()
