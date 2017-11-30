@@ -28,10 +28,10 @@ install:
 before_script:
 #before
 - cp patch/widgets.py lib/bootstrap3_datetime
-- cp mysql -e 'CREATE DATABASE MeetingSecretary;'  
+- mysql -e 'CREATE DATABASE MeetingSecretary;'  
 
 script:
-- 
+- python MeetingSecretary/manage.py test 
 
 services:
 - mysql
