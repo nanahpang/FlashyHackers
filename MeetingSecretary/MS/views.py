@@ -252,31 +252,59 @@ def accept(request):
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
 
+#meeting_info(title, group, id)
+def reject_meeting(request):
+    meeting_info = request.POST.getlist('meeting_info[]')
+    username = request.POST.get('username')
+    group_name = meeting_info[1]
+    title = meeting_info[0]
+    meetingid = meeting_info[2]
+    group = Group.objects.get(name = group_name)
+    #send notification to admin
+    admin = Group.objects.get(name = group_name).admin
+    member = User.objects.get(username = username)
+    message = username+ ' will not attend the meeting ' + title + 'of group ' + group_name + '.'
+    status = messageHandler.send_message(member, admin, message)
+    if status == 200:
+        result = 'true'
+    else:
+        retult = 'false'
+    meeting = Meeting.objects.get(id = meetingid)
+    messageHandler.set_meetinginvitation_reject(member, group, meeting)
+
+    res = {'valid': result}
+    res = json.dumps(res)
+    mimetype = 'application/json'
+    return HttpResponse(res, mimetype)
+
+
 #meeting_info[title, description, group, start_time, end_time]
 def accept_meeting(request):
     meeting_info = request.POST.getlist('meeting_info[]')
-    #meeting_info = json.loads(meeting_info)
     username = request.POST.get('username')
-    #print(username)
-    print(meeting_info)
-    #return result to ajax
     group_name = meeting_info[2]
     title = meeting_info[0]
     description = meeting_info[1]
     start_time = meeting_info[3]
     end_time = meeting_info[4]
+    meetingid = meeting_info[5]
+    group = Group.objects.get(name = group_name)
     #send notification to admin
     admin = Group.objects.get(name = group_name).admin
     member = User.objects.get(username = username)
-    message = username+ ' has accepted your invitation of joining group '+ group_name
+    message = username+ ' will attend the meeting ' + title + 'of group ' + group_name + '.'
     status = messageHandler.send_message(member, admin, message)
     if status == 200:
         result = 'true'
     else:
         retult = 'false'
     #store an event of that user
+    ##add event
 
 
+
+    meeting = Meeting.objects.get(id = meetingid)
+    messageHandler.set_meetinginvitation_accept(member, group, meeting)
     #increase attendees
     res = {'valid': result}
     res = json.dumps(res)
@@ -534,6 +562,7 @@ def view_meetinginvitation(request):
             'admin': item.sender.username,
             'status' : item.status,
             'meeting' : {
+                'id' : item.meeting.id,
                 'group': item.meeting.group.name,
                 'title': item.meeting.title,
                 'start_time': item.meeting.start_time.isoformat(),
