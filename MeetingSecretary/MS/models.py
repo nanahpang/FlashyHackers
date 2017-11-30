@@ -16,6 +16,14 @@ class Membership(models.Model):
 	member = models.ForeignKey(User)
 	group = models.ForeignKey(Group)
 
+
+class Meeting(models.Model):
+	group = models.ForeignKey(Group)
+	title = models.CharField(max_length = 140)
+	description = models.TextField(blank=True)
+	start_time = models.DateTimeField()
+	end_time = models.DateTimeField()
+
 class GroupInvitation(models.Model):
 	sender = models.ForeignKey(User, related_name = 'send_gi')
 	recipient = models.ForeignKey(User, related_name = 'received_gi')
