@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
@@ -301,7 +301,27 @@ def accept_meeting(request):
         retult = 'false'
     #store an event of that user
     ##add event
+    if '-' in start_time:
+        def convert(ddatetime):
+            if ddatetime:
+                ddatetime = ddatetime.split(' ')[0]
+                # print(ddatetime)\
+                ddatetime = ddatetime.split('+')[0]
+                print(ddatetime)
+                return datetime.datetime.strptime(ddatetime, '%Y-%m-%dT%H:%M:%S')
+    else:
+        def convert(ddatetime):
+            return datetime.datetime.utcfromtimestamp(float(ddatetime))
 
+    start_time = convert(start_time)
+    end_time = convert(end_time)
+    event= Event(title = title, description = description, start= start_time, end = end_time)
+    user = User.objects.get(username = username)
+    calendar = Calendar.objects.get(slug = username)
+    event.creator = user
+    event.calendar = calendar
+    event.save()
+        # return HttpResponseRedirect(event.get_absolute_url())
 
 
     meeting = Meeting.objects.get(id = meetingid)
