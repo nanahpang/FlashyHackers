@@ -233,20 +233,20 @@ def accept(request):
     username = request.POST.get('username')
     member = User.objects.get(username = username)
     group = Group.objects.get(name = group_name)
-    
+
     #let this new member join group
     p = Membership(group = group, member = member)
     p.save()
     result = 'true'
-    
+
     #send notification to admin
     admin = Group.objects.get(name = group_name).admin
     message = username+ ' has accepted your invitation of joining group '+ group_name
     status = messageHandler.send_message(member, admin, message)
-    
+
     #modify all other invitations related to this event 'accepted'
     messageHandler.set_invitation_accept(member, group)
-    
+
     #return result to ajax
     res = {'valid': result}
     res = json.dumps(res)
@@ -331,17 +331,18 @@ def accept_meeting(request):
     res = json.dumps(res)
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
+
 def reject_group(request):
     group_name = request.POST.get('group_name')
     username = request.POST.get('username')
     member = User.objects.get(username = username)
     group = Group.objects.get(name = group_name)
-     
+
     #send notification to admin
     admin = Group.objects.get(name = group_name).admin
     message = username+ ' has rejected your invitation of joining group '+ group_name
     status = messageHandler.send_message(member, admin, message)
-    
+
     #modify all other invitations related to this event 'accepted'
     messageHandler.set_invitation_reject(member, group)
     result = 'true'
@@ -426,6 +427,7 @@ class Interval:
       def __init__(self, s=0, e=0):
           self.start = s
           self.end = e
+
 def find_time(request):
     start = request.POST.get('start_time')
     end = request.POST.get('end_time')
@@ -497,7 +499,7 @@ def find_time(request):
                 event_end = event_end.astimezone(current_tz)
             interval= Interval(event_start,event_end)
             intervals.append(interval)
-    
+
     intervals.sort(key = lambda x:x.start)
     length=len(intervals)
     res=[]
@@ -521,8 +523,8 @@ def find_time(request):
         result.append(temp)
     length_r = len(result)
     response_data=[]
-    
-    
+
+
     for i in range(length_r+1):
         if i==0:
             if start >= res[i].start:
@@ -605,7 +607,7 @@ def view_meetinginvitation(request):
                 'start_time': item.meeting.start_time.isoformat(),
                 'end_time': item.meeting.end_time.isoformat(),
                 'description': item.meeting.description,
-            },    
+            },
             'sent_at' : item.sent_at.isoformat()
         }
         invitations.append(invitation)

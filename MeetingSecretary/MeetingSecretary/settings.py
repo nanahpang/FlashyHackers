@@ -110,9 +110,9 @@ WSGI_APPLICATION = 'MeetingSecretary.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'MeetingSecretary',
+        'NAME': 'MeetingSecretary2',
         'USER': 'root',
-        'PASSWORD': 'root',
+        'PASSWORD': 'baiweihua',
         'HOST': '',
         'PORT': '',
     }
