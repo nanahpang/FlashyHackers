@@ -7,7 +7,7 @@ from django.contrib import messages
 # from MS.models import CredentialsModel
 
 # Create your views here.
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, HttpResponseNotFound
 from MS.forms import SignUpForm, CreatePartialGroupForm
 from MS.models import Group, Membership, Meeting
 from django.core import serializers
@@ -41,7 +41,6 @@ from django.views.generic.edit import (
     CreateView, DeleteView, ModelFormMixin, ProcessFormView, UpdateView,
 )
 
-from schedule.forms import EventForm, OccurrenceForm
 from schedule.models import Calendar, Event, Occurrence
 from schedule.periods import weekday_names
 from schedule.settings import (
@@ -158,6 +157,7 @@ def find_all_members(group, keepAdmin):
 
 def showgroup(request):
     group_name = request.POST.get('group_name')
+    print('group name is ' + group_name)
     data = Membership.objects.filter(group = group_name)
     admin = Group.objects.get(name = group_name).admin.username
 
@@ -170,6 +170,26 @@ def showgroup(request):
     res = json.dumps(res)
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
+
+def showonegroupfunc(request, group_name):
+    if group_name == '':
+        print('empty')
+        return HttpResponseNotFound('<h1>No Page Here</h1>')
+    group = Group.objects.filter(name=group_name)
+    if len(group) == 0:
+        print('noneexist')
+        return HttpResponseNotFound('<h1>No Page Here</h1>')
+    print(group[0].name)
+    print(group[0].admin.username)
+    print(group[0].admin)
+    print(request.user)
+    print(request.user.username)
+    if group[0].admin != request.user:
+        return render(request, 'MS/groups.html', {'is_admin': 0})
+    return render(request, 'MS/groups.html', {'is_admin': 1})
+
+
+
 
 def deletegroup(request):
     group_name = request.POST.get('groupid')

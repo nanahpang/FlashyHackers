@@ -46,7 +46,7 @@ urlpatterns = [
         name='viewallgroups'),
     url(r'^ajax/viewadmingroups/$', views.viewadmingroups, name='viewadmingroups'),
     url(r'^ajax/showgroup/', views.showgroup, name='showgroup'),
-    url(r'^groups/([a-z]*)', TemplateView.as_view(template_name='MS/groups.html'), name='groups'),
+    url(r'^groups/(?P<group_name>([a-z]*))/$', views.showonegroupfunc, name='groups'),
     url(r'^ajax/addnewmember/', views.addnewmember, name='addnewmember'),
     url(r'^ajax/deletemember/', views.deletemember, name='deletemember'),
     url(r'^ajax/deletegroup/', views.deletegroup, name='deletegroup'),
