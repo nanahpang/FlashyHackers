@@ -561,7 +561,7 @@ def add_meeting(request):
 
     ##send invitation to all member
     ###find all member
-    memberlist = find_all_members(group, False)
+    memberlist = find_all_members(group, True)
     for member in memberlist:
         status = sendmeetinginvitation(admin, member, group, p)
         if status == True:
