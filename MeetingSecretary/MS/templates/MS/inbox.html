@@ -21,11 +21,11 @@
       <div class="col-md">
           <h3>Group Invitations</h3>
           <ul class = "list-group" id="gi_list">    
-              <div class="modal fade" id="GroupInvitationModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal fade" id="GroupInvitationModal" tabindex="-1" role="dialog" aria-labelledby="GroupModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                   <div class="modal-content">
                     <div class="modal-header">
-                      <h5 class="modal-title" id="exampleModalLabel">Group Invitation</h5>
+                      <h5 class="modal-title" id="GroupModalLabel">Group Invitation</h5>
                       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                       </button>
@@ -44,7 +44,29 @@
             </ul>>
       </div>
       <div class="col-md">
-        <h3>Meeting Invitations</h3>>
+          <h3>Meeting Invitations</h3>
+          <ul class = "list-group" id="mi_list">    
+              <div class="modal fade" id="MeetingInvitationModal" tabindex="-1" role="dialog" aria-labelledby="MeetingModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="MeetingModalLabel">Meeting</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-success" data-dismiss="modal" id = "accept_mi">Accept</button>
+                        <button type="button" class="btn btn-outline-danger" data-dismiss="modal" id = "reject_mi">Reject</button>
+                        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ul>>
       </div>
     </div>
   </div>
@@ -114,6 +136,70 @@
         }        
       }
     });
+
+    /******************************/
+    /* read all meeting invitations */
+    /******************************/
+    $.ajax({
+      type: 'POST',
+      url: '/ajax/viewmeetinginvitation/',
+      data: {username, csrfmiddlewaretoken:'{{ csrf_token}}'},
+      dataType: 'json',
+      success: function(data){
+        var invitation_count = data.length;
+        if (invitation_count == 0) 
+          $("#mi_list").append("You have no invitations for now. Take a break.  :-)");
+        else {
+          for (var i = 0; i < invitation_count; ++i) {
+            var status = data[i]['status'];
+            if (status == 'NO') {
+              var meeting = new Array();
+              meeting['title'] = data[i]['meeting']['title'];
+              meeting['description'] = data[i]['meeting']['description'];
+              meeting['group'] = data[i]['meeting']['group'];
+              meeting['start_time'] = data[i]['meeting']['start_time'];
+              meeting['end_time'] = data[i]['meeting']['end_time'];
+              meeting['id'] = data[i]['meeting']['id'];
+              //pass meeting invitation id
+              //meeting['id'] = data[i]['meeting']['id'];
+
+              var para = document.createElement("li");
+              para.setAttribute("class","list-group-item");
+              para.setAttribute("id", "mi" + meeting['id']);
+              para.innerHTML= data[i]['admin'] + " invites you to attend meeting " + data[i]['meeting']['title'];
+              
+
+              var bt = document.createElement("button");
+              bt.setAttribute("class", "btn btn-primary");
+              bt.setAttribute("id", "mi-bt" + meeting['id']);
+              bt.innerHTML="view details";
+              bt.onclick = function(){ meeting_handler(meeting); }; 
+              para.appendChild(bt);
+
+              $("#mi_list").append(para);
+            }
+            else if (status == 'AC'){
+              var meeting = new Array();
+              meeting['title'] = data[i]['meeting']['title'];
+              meeting['group'] = data[i]['meeting']['group'];
+              var para = document.createElement("li");
+              para.setAttribute("class","list-group-item disabled");
+              para.innerHTML = "You decide to attend meeting " + meeting['title']+" of group " + meeting['group'] + " .";
+              $("#mi_list").append(para);
+            }
+            else if (status == 'RJ'){
+              var meeting = new Array();
+              meeting['title'] = data[i]['meeting']['title'];
+              meeting['group'] = data[i]['meeting']['group'];
+              var para = document.createElement("li");
+              para.setAttribute("class", "list-group-item disabled");
+              para.innerHTML = "You have rejected to attend meeting " + meeting['title']+ " of group " + meeting['group'] + " .";
+              $("#mi_list").append(para);
+            }
+          }
+        }        
+      }
+    });
   });
 
      
@@ -156,6 +242,75 @@
           });
       });
       $("#GroupInvitationModal").modal('show');	
+      
+  }
+
+  function meeting_accept(meeting,username) {
+    var meeting_info = new Array();
+    meeting_info['title'] = meeting['title'];
+    meeting_info['description'] = meeting['description'];
+    meeting_info['group'] = meeting['group'];    
+    //alert(meeting_info['group']);
+     
+  }
+
+  function meeting_reject(meeting_info, username) {
+    alert(meeting_info);
+    $.ajax({
+      type: 'POST',
+      url: '/ajax/rejectmeeting/',
+      data: {username, 'meeting_info[]': meeting_info , csrfmiddlewaretoken:'{{ csrf_token}}'},
+      dataType: 'json',
+      success: function(data){
+        if(data['valid'] == 'true')
+            alert("You will not go to the meeting "+ meeting_info[0] + " .  :-(");
+        else 
+          alert("Something happened. :(");				
+      }
+  }); 
+  }
+  function meeting_handler(meeting) {
+      var username = '{{user.username}}';
+      $("#MeetingInvitationModal").on('show.bs.modal', function () {
+        var modal = $(this);
+        modal.find('.modal-body').text('Will you attend the meeting ' + meeting['title'] + ' from group ' + meeting['group'] + '?'
+        + "The time is from " + meeting['start_time'] + " to " + meeting['end_time']);
+        var bt_accept = document.getElementById('accept_mi');
+        bt_accept.onclick =  function () {     
+          $("#MeetingInvitationModal").modal('hide');  
+          var meeting_info = [];
+          meeting_info.push(meeting['title']);
+          meeting_info.push(meeting['description']);
+          meeting_info.push(meeting['group']);
+          meeting_info.push(meeting['start_time']);
+          meeting_info.push(meeting['end_time']);
+          meeting_info.push(meeting['id']);
+          $.ajax({
+            type: 'POST',
+            url: '/ajax/acceptmeeting/',
+            data: {'username': username, 'meeting_info[]': meeting_info, csrfmiddlewaretoken:'{{ csrf_token}}'},
+            dataType: 'json',
+            traditional: true,
+            success: function(data){
+              if(data['valid'] == 'true')
+                  alert("This meeting has been added to your canlendar "+ " successfully! You can see that in your canlendar.");
+              else 
+                alert("Something happened. :(");				
+            }
+        });
+        };
+
+        var bt_reject = document.getElementById('reject_mi');
+        bt_reject.onclick = function() {
+          $('#MeetingInvitationModal').modal('hide');
+          var meeting_info = [];
+          meeting_info.push(meeting['title']);
+          meeting_info.push(meeting['group']);
+          meeting_info.push(meeting['id']);
+          meeting_reject(meeting_info, username);
+        };
+      });
+      $("#MeetingInvitationModal").modal('show');	
       
   }
 </script>

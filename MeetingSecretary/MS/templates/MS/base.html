@@ -16,10 +16,10 @@
 
     <!-- Custom styles for this template -->
     <link href="{% static 'css/business-casual.css' %}" rel="stylesheet">
+
     {% block extra_head %}
     {% endblock %}
   <script src="http://ajax.aspnetcdn.com/ajax/jquery/jquery-3.2.0.min.js"></script>
-
 
 </head>
 <body>
@@ -88,7 +88,6 @@
 
     <footer class="bg-faded text-center py-3">
       <div class="container">
-
           <a href="{% url 'logout' %}">logout</a><br>
         <p class="m-0">Copyright &copy; FlashyHackers 2017</p>
       </div>
@@ -99,12 +98,12 @@
     <script src="{% static 'jquery_home/jquery.min.js' %}"></script>
     <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 
-        <!-- Menu Toggle Script -->
-        <script>
-        $("#menu-toggle").click(function(e) {
-            e.preventDefault();
-            $("#wrapper").toggleClass("toggled");
-        });
-        </script>
+    <!-- Menu Toggle Script -->
+    <script>
+    $("#menu-toggle").click(function(e) {
+        e.preventDefault();
+        $("#wrapper").toggleClass("toggled");
+    });
+    </script>
 </body>
 </html>

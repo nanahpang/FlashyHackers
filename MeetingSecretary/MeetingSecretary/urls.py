@@ -70,6 +70,13 @@ urlpatterns = [
     url(r'^profile/',TemplateView.as_view(template_name='MS/profile_page.html')),
     # Uncomment the next line to enable the admin:
     #url(r'^admin/', include(admin.site.urls)),
+    #for meeting
+    url(r'^ajax/searchtime/', views.searchtime, name='searchtime'),
+    url(r'^ajax/find_time/', views.find_time, name='find_time'),
+    url(r'^ajax/addmeeting/', views.add_meeting, name='add_meeting'),
+    url(r'^ajax/viewmeetinginvitation/', views.view_meetinginvitation, name='view_meetinginvitation'),
+    url(r'^ajax/acceptmeeting/', views.accept_meeting, name='accept_meeting'),
+    url(r'^ajax/rejectmeeting/', views.reject_meeting, name='reject_meeting'),
 ]
 #if settings.DEBUG:
 #    import debug_toolbar

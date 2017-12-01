@@ -1,8 +1,10 @@
 {% extends 'MS/base.html' %}
-
+{% block extra_head %}
+{% endblock %}
 {% block title %}
     change
 {% endblock %}
+
 
 {% block content %}
   {% if user.is_authenticated %}
@@ -28,6 +30,8 @@
             {% csrf_token %}
             <label for="first_name">First Name </label>
             <input id="first_name" type="text" name="first_name"> <br><br><br>
+
+
             <label for="last_name">Last Name </label>
             <input id="last_name" type="text" name="last_name"> <br><br><br>
             <label for="email">Email </label>
@@ -47,4 +51,11 @@
 {% endblock %}
 {% block footer %}
   <a href="{% url 'home' %}">home</a>
+<script type="text/javascript">
+  $(function() {
+    $('#datetimepicker1').datetimepicker({
+      language: 'pt-BR'
+    });
+  });
+</script>
 {% endblock %}

@@ -6,9 +6,13 @@ from django.contrib import messages
 # Create your views here.
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from MS.forms import SignUpForm, CreatePartialGroupForm
-from MS.models import Group, Membership
+from MS.models import Group, Membership, Meeting
+try:
+    import simplejson as json
+except ImportError:
+    import json
 from django.utils import timezone
-# Copy from schedule
+import datetime
 from django.conf import settings
 from django.db.models import Q
 from django.http import (
@@ -124,6 +128,22 @@ def viewadmingroups(request):
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
 
+def find_all_members(group, keepAdmin):
+    ##include admin
+    data = Membership.objects.filter(group = group)
+    result = []
+    if (keepAdmin == True):
+        for item in data:
+            result.append(item.member)
+        return result
+    else:
+        result = []
+        admin = Group.objects.get(name = group.name).admin
+        for item in data:
+            if item.member != admin:
+                result.append(item.member)
+        return result
+        
 
 def showgroup(request):
     """
@@ -242,6 +262,65 @@ def accept(request):
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
 
+#meeting_info(title, group, id)
+def reject_meeting(request):
+    meeting_info = request.POST.getlist('meeting_info[]')
+    username = request.POST.get('username')
+    group_name = meeting_info[1]
+    title = meeting_info[0]
+    meetingid = meeting_info[2]
+    group = Group.objects.get(name = group_name)
+    #send notification to admin
+    admin = Group.objects.get(name = group_name).admin
+    member = User.objects.get(username = username)
+    message = username+ ' will not attend the meeting ' + title + 'of group ' + group_name + '.'
+    status = msgHandler.send_message(member, admin, message)
+    if status == 200:
+        result = 'true'
+    else:
+        retult = 'false'
+    meeting = Meeting.objects.get(id = meetingid)
+    messageHandler.set_meetinginvitation_reject(member, group, meeting)
+
+    res = {'valid': result}
+    res = json.dumps(res)
+    mimetype = 'application/json'
+    return HttpResponse(res, mimetype)
+
+
+#meeting_info[title, description, group, start_time, end_time]
+def accept_meeting(request):
+    meeting_info = request.POST.getlist('meeting_info[]')
+    username = request.POST.get('username')
+    group_name = meeting_info[2]
+    title = meeting_info[0]
+    description = meeting_info[1]
+    start_time = meeting_info[3]
+    end_time = meeting_info[4]
+    meetingid = meeting_info[5]
+    group = Group.objects.get(name = group_name)
+    #send notification to admin
+    admin = Group.objects.get(name = group_name).admin
+    member = User.objects.get(username = username)
+    message = username+ ' will attend the meeting ' + title + 'of group ' + group_name + '.'
+    status = messageHandler.send_message(member, admin, message)
+    if status == 200:
+        result = 'true'
+    else:
+        retult = 'false'
+    #store an event of that user
+    ##add event
+
+
+
+
+    meeting = Meeting.objects.get(id = meetingid)
+    messageHandler.set_meetinginvitation_accept(member, group, meeting)
+    #increase attendees
+    res = {'valid': result}
+    res = json.dumps(res)
+    mimetype = 'application/json'
+    return HttpResponse(res, mimetype)
 def reject_group(request):
     """
     :param request: posting request that rejects the invitation
@@ -282,6 +361,14 @@ def sendgroupinvitation(from_user, to_user, group):
         result = False
     return result
 
+def sendmeetinginvitation(from_user, to_user, group, meeting):
+    status = messageHandler.send_meetinginvitation(from_user, to_user, group, meeting)
+    if status == 200:
+        result = True
+    else:
+        result = False
+    return result
+
 
 def view_notification(request):
     """
@@ -311,7 +398,7 @@ def view_groupinvitation(request):
     """
     username = request.POST.get('username')
     user = User.objects.get(username=username)
-    invitation_entries = msgHandler.get_invitation(user)
+    invitation_entries = msgHandler.get_groupinvitation(user)
     invitations = []
     for item in invitation_entries:
         invitation = {
@@ -326,6 +413,209 @@ def view_groupinvitation(request):
     return HttpResponse(res, mimetype)
 
 
+#test search available time
+def searchtime(request):
+    """
+    :param request:  request to search a meeting time for the group
+    :return: HTTP
+    """
+    group_name = request.POST.get("group_name")
+    start_time = request.POST.get("start_time")
+    end_time = request.POST.get("end_time")
+    res = []
+    for i in range(2):
+        start = timezone.now().isoformat()
+        end = timezone.now().isoformat()
+        slot = []
+        slot.append(start)
+        slot.append(end)
+        res.append(slot)
+    result = {'slots' : res}
+    result = json.dumps(result)
+    mimetype = 'application/json'
+    return HttpResponse(result, mimetype)
+
+class Interval:
+      def __init__(self, s=0, e=0):
+          self.start = s
+          self.end = e
+def find_time(request):
+    """
+    :param request:  request to find a common time for the group
+    :return: HTTP
+    """
+    start = request.POST.get('start_time')
+    end = request.POST.get('end_time')
+    group_name = request.GET.get('group_name')
+    timezone = request.GET.get('timezone')
+    #timezone = 'US/Eastern'
+    member_object = Membership.objects.filter(group = group_name)
+    members = []
+    response_data = []
+    for item in member_object:
+        data_json = item.member.username
+        members.append(data_json)
+    if not start or not end:
+        raise ValueError('Start and end parameters are required')
+    # version 2 of full calendar
+    # TODO: improve this code with date util package
+    if '-' in start:
+        def convert(ddatetime):
+            if ddatetime:
+                ddatetime = ddatetime.split(' ')[0]
+                return datetime.datetime.strptime(ddatetime, '%Y-%m-%d')
+    else:
+        def convert(ddatetime):
+            return datetime.datetime.utcfromtimestamp(float(ddatetime))
+
+    start = convert(start)
+    end = convert(end)
+    current_tz = False
+    if timezone and timezone in pytz.common_timezones:
+        # make start and end dates aware in given timezone
+        current_tz = pytz.timezone(timezone)
+        start = current_tz.localize(start)
+        end = current_tz.localize(end)
+    elif settings.USE_TZ:
+        # If USE_TZ is True, make start and end dates aware in UTC timezone
+        utc = pytz.UTC
+        start = utc.localize(start)
+        end = utc.localize(end)
+    print(start)
+    print(end)
+    if members:
+        # will raise DoesNotExist exception if no match
+        calendars = []
+        for item in members:
+            calendars.append(Calendar.objects.get(slug=item))
+
+        # calendars = [Calendar.objects.get(slug=calendar_slug)]
+    # if no calendar slug is given, get all the calendars
+    else:
+        calendars = Calendar.objects.all()
+    event_list = []
+    # i = 1
+    # if Occurrence.objects.all().count() > 0:
+    #     i = Occurrence.objects.latest('id').id + 1
+    for calendar in calendars:
+        # create flat list of events from each calendar
+        event_list += calendar.events.filter(start__lte=end).filter(
+            Q(end_recurring_period__gte=start) |
+            Q(end_recurring_period__isnull=True))
+    intervals = []
+    for event in event_list:
+        occurrences = event.get_occurrences(start, end)
+        for occurrence in occurrences:
+            event_start = occurrence.start
+            event_end = occurrence.end
+            if current_tz:
+                # make event start and end dates aware in given timezone
+                event_start = event_start.astimezone(current_tz)
+                event_end = event_end.astimezone(current_tz)
+            interval= Interval(event_start,event_end)
+            intervals.append(interval)
+    
+    intervals.sort(key = lambda x:x.start)
+    length=len(intervals)
+    res=[]
+    for i in range(length):
+        if res==[]:
+            res.append(intervals[i])
+        else:
+            size=len(res)
+            if res[size-1].start<=intervals[i].start<=res[size-1].end:
+                res[size-1].end=max(intervals[i].end, res[size-1].end)
+            else:
+                res.append(intervals[i])
+    if len(res) == 0:
+        response_data.append([start, end])
+        data = {'slots': response_data}
+        return JsonResponse(data, safe=False)
+
+    result = []
+    for item in res:
+        temp = [item.start,item.end]
+        result.append(temp)
+    length_r = len(result)
+    response_data=[]
+    
+    
+    for i in range(length_r+1):
+        if i==0:
+            if start >= res[i].start:
+                continue
+            else:
+               res_start = start
+               res_end = res[i].start
+
+        elif i==length_r:
+            if end <= res[i-1].end:
+                continue
+            else:
+                res_start = res[i-1].end
+                res_end = end
+        else:
+            res_start = res[i-1].end
+            res_end = res[i].start
+        response_data.append([res_start.isoformat(),res_end.isoformat()])
+    data = {'slots': response_data}
+    return JsonResponse(data, safe=False)
+
+def add_meeting(request):
+    """
+    :param request:  request to add a meeting for the group
+    :return: HTTP
+    """
+    group_name = request.POST.get('group_name')
+    title = request.POST.get('title')
+    description = request.POST.get('description')
+    start_time = request.POST.get('start_time')
+    end_time = request.POST.get('end_time')
+    group = Group.objects.get(name = group_name)
+    admin = group.admin
+    #find time convertor
+    ##save this meeting into meeting table
+    p = Meeting(group = group, title = title, description = description, start_time = start_time, end_time = end_time)
+    p.save()
+
+    ##send invitation to all member
+    ###find all member
+    memberlist = find_all_members(group, False)
+    for member in memberlist:
+        status = sendmeetinginvitation(admin, member, group, p)
+        if status == True:
+            result = 'true'
+        else:
+            result = 'false'
+    data = {'valid': result}
+    data = json.dumps(data)
+    mimetype = 'application/json'
+    return HttpResponse(data, mimetype)
+
+def view_meetinginvitation(request):
+    username = request.POST.get('username')
+    user = User.objects.get(username = username)
+    invitation_entries = messageHandler.get_meetinginvitation(user)
+    invitations = []
+    for item in invitation_entries:
+        invitation = {
+            'group':item.group.name,
+            'admin': item.sender.username,
+            'status' : item.status,
+            'meeting' : {
+                'id' : item.meeting.id,
+                'group': item.meeting.group.name,
+                'title': item.meeting.title,
+                'start_time': item.meeting.start_time.isoformat(),
+                'end_time': item.meeting.end_time.isoformat(),
+                'description': item.meeting.description,
+            },    
+            'sent_at' : item.sent_at.isoformat()
+        }
+        invitations.append(invitation)
+    res = json.dumps(invitations)
+    mimetype = 'application/json'
+    return HttpResponse(res, mimetype)
 #calendar management
 def calendar(request):
     """
