@@ -93,6 +93,42 @@
 		</div>
 	</div>
 </div>
+<div class="modal fade" id="MeetingInfoModal" tabindex="-1" role="dialog" aria-labelledby="MeetingInfoModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+			<h5 class="modal-title" id="MeetingInfoModal">Meeting Infomation</h5>
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			</button>
+			</div>
+			<div class="modal-body">
+			<form>
+				<div class="form-group">
+				<label for="title" class="col-form-label">Title:</label>
+				<input type="text" class="form-control" id="mi-title">
+				</div>
+				<div class="form-group">
+				<label for="start-time" class="col-form-label">Start time:</label>
+				<input class="form-control" id="mi-start-time"></input>
+				</div>
+				<div class="form-group">
+					<label for="end-time" class="col-form-label">End time:</label>
+					<input class="form-control" id="mi-end-time"></input>
+			</div>
+			<div class="form-group">
+					<label for="description" class="col-form-label">Description: </label>
+					<textarea class="form-control" id="mi-description"></textarea>
+			</div>
+			</form>
+			</div>
+			<div class="modal-footer">
+			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+			<button type="button" class="btn btn-primary" id="sendinvitation">Change the information</button>
+			</div>
+		</div>
+		</div>
+	</div>
 <h2></h2>
 
 
@@ -133,11 +169,6 @@ $(document).ready(function(){
 				var count = data['member'].length;
 				for (var i = 0; i < count; ++i)
 					$("ol").append("<li>" + data['member'][i]+ "</li>");
-					//"<button type='button'" + "onclick = deletemember('" + data[i] + "')" 
-					//+ "value = " + "'"+ data[i] + "'"
-					//+ "id = " + "'member"+ data[i] + "'"
-					//+">delete</button>"+"</li>");
-
 			}
 		});
 
@@ -159,6 +190,11 @@ $(document).ready(function(){
 						description = data[i]['description'];
 						start_time = data[i]['start_time'];
 						end_time = data[i]['end_time'];
+						show_data = [];
+						show_data.push(title);
+						show_data.push(description);
+						show_data.push(start_time);
+						show_data.push(end_time);
 						var card = document.createElement('div');
 						card.setAttribute("class","card");
 						card.setAttribute("style","width: 20rem;");
@@ -173,9 +209,14 @@ $(document).ready(function(){
 						var meeting_description = document.createElement('p');
 						meeting_description.setAttribute("class","card-text");
 						meeting_description.innerHTML=description;
+						var meeting_view = document.createElement('button');
+						meeting_view.setAttribute("class","btn btn-primary");
+						meeting_view.innerHTML = "Change";
+						meeting_view.onclick = function(){ change_meeting(show_data)};
 						card_body.appendChild(meeting_title);
 						card_body.appendChild(meeting_time);
 						card_body.appendChild(meeting_description);
+						card_body.appendChild(meeting_view);
 						card.appendChild(card_body);
 						$("#meeting-cards").append(card);
 					}
@@ -259,6 +300,22 @@ $(document).ready(function(){
 				}
 			});
 		});
+
+		function change_meeting(show_data){
+			$("#MeetingInfoModal").on('show.bs.modal', function () {
+				//var modal = $(this);
+				var title = document.getElementById('mi-title');
+				title.setAttribute("value",show_data[0]);
+				var description = document.getElementById('mi-description');
+				description.setAttribute("value",show_data[1])
+				var start_time = document.getElementById('mi-start-time');
+				start_time.setAttribute("value",show_data[2]);
+				var end_time = document.getElementById('mi-end-time');
+				end_time.setAttribute("value",show_data[3]);
+				
+			});
+			$("#MeetingInfoModal").modal('show');	
+		}
 </script>
 {% endblock %}
 
