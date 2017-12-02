@@ -9,7 +9,7 @@ from django.contrib import messages
 # Create your views here.
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, HttpResponseNotFound
 from MS.forms import SignUpForm, CreatePartialGroupForm
-from MS.models import Group, Membership, Meeting
+from MS.models import Group, Membership, Meeting, MeetingEventRelationship
 from django.core import serializers
 
 try: import simplejson as json
@@ -86,7 +86,7 @@ def change(request, type):
                 return render(request, 'MS/change.html', {'type': type, 'warn': 'password_empty'})
             request.user.set_password(password1)
             request.user.save()
-            user = authenticate(request, username=request.user.username, password=password1)
+            user = authenticate(username=request.user.username, password=password1)
             login(request, user)
         elif type == "information":
             request.user.first_name = request.POST['first_name']
@@ -157,7 +157,7 @@ def find_all_members(group, keepAdmin):
 
 def showgroup(request):
     group_name = request.POST.get('group_name')
-    print('group name is ' + group_name)
+    #print('group name is ' + group_name)
     data = Membership.objects.filter(group = group_name)
     admin = Group.objects.get(name = group_name).admin.username
 
@@ -196,8 +196,9 @@ def deletegroup(request):
     operationuser = request.POST.get('operationuser')
     q = Group.objects.get(name = group_name)
     if q.admin.username == operationuser :
+         _deletemeetings(q)
          p  = Membership.objects.filter(group = group_name)
-         p.delete()
+         p[0].delete()
          q.delete()
          result = 'true'
     else :
@@ -206,6 +207,7 @@ def deletegroup(request):
     res = json.dumps(res)
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
+
 
 
 def addnewmember(request):
@@ -238,8 +240,7 @@ def deletemember(request):
     group = Group.objects.get(name = group_name)
     if group.admin.username == operationuser and member_id != operationuser:
         member = User.objects.get(username = member_id)
-        p = Membership.objects.get(group = group_name, member = member)
-        p.delete()
+        _deletememberfromgroup(group_name, member)
         result = 'true'
     else:
         result = 'false'
@@ -248,6 +249,22 @@ def deletemember(request):
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
 
+
+def _deletememberfromgroup(group_name, member):
+    p = Membership.objects.get(group=group_name, member=member)
+    meetings = Meeting.objects.filter(group=group_name)
+    for meeting in meetings:
+        _deletememberfrommeeting(meeting, member)
+    p.delete()
+    result = 'true'
+
+def _deletememberfrommeeting(meeting, member):
+    events = Event.objects.filter(creator=member)
+    for event in events:
+        mers = MeetingEventRelationship.objects.filter(meeting=meeting, event=event)
+        for mer in mers:
+            mer.delete()
+
 def accept(request):
     group_name = request.POST.get('group_name')
     username = request.POST.get('username')
@@ -255,9 +272,13 @@ def accept(request):
     group = Group.objects.get(name = group_name)
 
     #let this new member join group
-    p = Membership(group = group, member = member)
-    p.save()
-    result = 'true'
+    membership = Membership.objects.filter(group=group, member=member)
+    if len(membership) == 0:
+        p = Membership(group = group, member = member)
+        p.save()
+        result = 'true'
+    else:
+        result = 'false'
 
     #send notification to admin
     admin = Group.objects.get(name = group_name).admin
@@ -273,6 +294,123 @@ def accept(request):
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
 
+def reject_group(request):
+    group_name = request.POST.get('group_name')
+    username = request.POST.get('username')
+    member = User.objects.get(username = username)
+    group = Group.objects.get(name = group_name)
+
+    #send notification to admin
+    admin = Group.objects.get(name = group_name).admin
+    message = username+ ' has rejected your invitation of joining group '+ group_name
+    status = messageHandler.send_message(member, admin, message)
+
+    #modify all other invitations related to this event 'accepted'
+    messageHandler.set_invitation_reject(member, group)
+    result = 'true'
+    #return result to ajax
+    res = {'valid': result}
+    res = json.dumps(res)
+    mimetype = 'application/json'
+    return HttpResponse(res, mimetype)
+
+
+#meeting management
+def add_meeting(request):
+    group_name = request.POST.get('group_name')
+    title = request.POST.get('title')
+    description = request.POST.get('description')
+    start_time = request.POST.get('start_time')
+    end_time = request.POST.get('end_time')
+    group = Group.objects.get(name = group_name)
+    admin = group.admin
+    #find time convertor
+    ##save this meeting into meeting table
+    p = Meeting(group = group, title = title, description = description, start_time = start_time, end_time = end_time)
+    p.save()
+    #bai! save event for the admin
+    event = Event(title=title, description=description, start=start_time, end=end_time)
+    event.creator = admin
+    calendar = Calendar.objects.get(slug=admin.username)
+    event.calendar = calendar
+    event.save()
+    #bai! save meetingeventrelationship for admin
+    mer = MeetingEventRelationship(meeting=p, event=event)
+    mer.save()
+
+    ##send invitation to all member
+    ###find all member
+    memberlist = find_all_members(group, True)
+    for member in memberlist:
+        if member == admin:
+            continue
+        status = sendmeetinginvitation(admin, member, group, p)
+        if status == True:
+            result = 'true'
+        else:
+            result = 'false'
+    data = {'valid': result}
+    data = json.dumps(data)
+    mimetype = 'application/json'
+    return HttpResponse(data, mimetype)
+
+
+def show_meetings(request):
+    group_name = request.POST.get('group_name')
+    group = Group.objects.get(name = group_name)
+    meeting_list = Meeting.objects.all().filter(group = group)
+    result = []
+    for item in meeting_list:
+
+        # bai!
+        allmeetingrelationship = MeetingEventRelationship.objects.filter(meeting=item)
+        meetingmembers = []
+        for re in allmeetingrelationship:
+            event = re.event
+            user = User.objects.get(username=event.creator.username)
+            print("the name is" + user.username)
+            meetingmembers.append(user.username)
+
+
+
+
+        res = {
+            'id' : item.id,
+            'title' : item.title,
+            'description' : item.description,
+            'start_time' : item.start_time.isoformat(),
+            'end_time' : item.end_time.isoformat(),
+            'meetingmembers': meetingmembers
+        }
+        result.append(res)
+    data = json.dumps(result)
+    mimetype = 'application/json'
+    return HttpResponse(data, mimetype)
+
+def view_meetinginvitation(request):
+    username = request.POST.get('username')
+    user = User.objects.get(username = username)
+    invitation_entries = messageHandler.get_meetinginvitation(user)
+    invitations = []
+    for item in invitation_entries:
+        invitation = {
+            'group':item.group.name,
+            'admin': item.sender.username,
+            'status' : item.status,
+            'meeting' : {
+                'id' : item.meeting.id,
+                'group': item.meeting.group.name,
+                'title': item.meeting.title,
+                'start_time': item.meeting.start_time.isoformat(),
+                'end_time': item.meeting.end_time.isoformat(),
+                'description': item.meeting.description,
+            },
+            'sent_at' : item.sent_at.isoformat()
+        }
+        invitations.append(invitation)
+    res = json.dumps(invitations)
+    mimetype = 'application/json'
+    return HttpResponse(res, mimetype)
 #meeting_info(title, group, id)
 def reject_meeting(request):
     meeting_info = request.POST.getlist('meeting_info[]')
@@ -347,30 +485,72 @@ def accept_meeting(request):
     meeting = Meeting.objects.get(id = meetingid)
     messageHandler.set_meetinginvitation_accept(member, group, meeting)
     #increase attendees
+
+    #bai! add meeting event relationship
+    mer = MeetingEventRelationship(meeting=meeting, event=event)
+
+    mer.save()
     res = {'valid': result}
     res = json.dumps(res)
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
 
-def reject_group(request):
+def delete_meeting(request):
+    meetingid = request.POST.get('id')
+    meeting = Meeting.objects.get(id=meetingid)
+    _deletemeeting(meeting)
+    data = {'valid': 'true'}
+    data = json.dumps(data)
+    mimetype = 'application/json'
+    return HttpResponse(data, mimetype)
+
+
+def change_meeting(request):
+    #print("come here")
+    meetingid = request.POST.get('id')
+    meeting = Meeting.objects.get(id=meetingid)
+    # delete original meeting event relationship and events
+    #mres = MeetingEventRelationship.objects.filter(meeting=meeting)
+    #for mre in mres:
+     #   event = mre.event
+     #   event.delete()
+     #   mre.delete()
+    description = "Notice! Meeting information is changed !! Please decide whether you will attend again!! (original meeting event is deleted automatically)\n"
+
+    _deletemeeting(meeting)
     group_name = request.POST.get('group_name')
-    username = request.POST.get('username')
-    member = User.objects.get(username = username)
-    group = Group.objects.get(name = group_name)
+    group = Group.objects.get(name=group_name)
+    admin = group.admin
+    title = request.POST.get('changed_title')
+    description += request.POST.get('changed_description')
+    start_time = request.POST.get('changed_start_time')
+    end_time = request.POST.get('changed_end_time')
 
-    #send notification to admin
-    admin = Group.objects.get(name = group_name).admin
-    message = username+ ' has rejected your invitation of joining group '+ group_name
-    status = messageHandler.send_message(member, admin, message)
+    meeting = Meeting(group=group, title=title, description=description, start_time=start_time, end_time=end_time)
+    meeting.save()
 
-    #modify all other invitations related to this event 'accepted'
-    messageHandler.set_invitation_reject(member, group)
+    event = Event(title=meeting.title, description=meeting.description, start=meeting.start_time, end=meeting.end_time)
+    event.creator = admin
+    calendar = Calendar.objects.get(slug=admin.username)
+    event.calendar = calendar
+    event.save()
+    mer = MeetingEventRelationship(meeting=meeting, event=event)
+    mer.save()
+
+    memberlist = find_all_members(group, True)
     result = 'true'
-    #return result to ajax
-    res = {'valid': result}
-    res = json.dumps(res)
+    for member in memberlist:
+        if member == admin:
+            continue
+        status = sendmeetinginvitation(admin, member, group, meeting)
+        if status == False:
+            result = 'false'
+    data = {'valid': result}
+    data = json.dumps(data)
     mimetype = 'application/json'
-    return HttpResponse(res, mimetype)
+    return HttpResponse(data, mimetype)
+
+
 
 #for messages
 def sendgroupinvitation(from_user, to_user, group):
@@ -566,74 +746,24 @@ def find_time(request):
     data = {'slots': response_data}
     return JsonResponse(data, safe=False)
 
-def add_meeting(request):
-    group_name = request.POST.get('group_name')
-    title = request.POST.get('title')
-    description = request.POST.get('description')
-    start_time = request.POST.get('start_time')
-    end_time = request.POST.get('end_time')
-    group = Group.objects.get(name = group_name)
-    admin = group.admin
-    #find time convertor
-    ##save this meeting into meeting table
-    p = Meeting(group = group, title = title, description = description, start_time = start_time, end_time = end_time)
-    p.save()
+def _deletemeetings(group):
+    meetings = Meeting.objects.filter(group=group)
+    for meeting in meetings:
+        _deletemeeting(meeting)
+    return
 
-    ##send invitation to all member
-    ###find all member
-    memberlist = find_all_members(group, True)
-    for member in memberlist:
-        status = sendmeetinginvitation(admin, member, group, p)
-        if status == True:
-            result = 'true'
-        else:
-            result = 'false'
-    data = {'valid': result}
-    data = json.dumps(data)
-    mimetype = 'application/json'
-    return HttpResponse(data, mimetype)
+def _deletemeeting(meeting):
+    mers = MeetingEventRelationship.objects.filter(meeting=meeting)
+    if len(mers) == 0:
+        return
+    for mer in mers:
+        event = mer.event
+        event.delete()
+        mer.delete()
+    # notice!! should send a message to members to notice
+    meeting.delete()
 
-def show_meetings(request):
-    group_name = request.POST.get('group_name')
-    group = Group.objects.get(name = group_name)
-    meeting_list = Meeting.objects.all().filter(group = group)
-    result = []
-    for item in meeting_list:
-        res = {
-            'title' : item.title,
-            'description' : item.description,
-            'start_time' : item.start_time.isoformat(),
-            'end_time' : item.end_time.isoformat()
-        }
-        result.append(res)
-    data = json.dumps(result)
-    mimetype = 'application/json'
-    return HttpResponse(data, mimetype)
 
-def view_meetinginvitation(request):
-    username = request.POST.get('username')
-    user = User.objects.get(username = username)
-    invitation_entries = messageHandler.get_meetinginvitation(user)
-    invitations = []
-    for item in invitation_entries:
-        invitation = {
-            'group':item.group.name,
-            'admin': item.sender.username,
-            'status' : item.status,
-            'meeting' : {
-                'id' : item.meeting.id,
-                'group': item.meeting.group.name,
-                'title': item.meeting.title,
-                'start_time': item.meeting.start_time.isoformat(),
-                'end_time': item.meeting.end_time.isoformat(),
-                'description': item.meeting.description,
-            },
-            'sent_at' : item.sent_at.isoformat()
-        }
-        invitations.append(invitation)
-    res = json.dumps(invitations)
-    mimetype = 'application/json'
-    return HttpResponse(res, mimetype)
 #calendar management
 def calendar(request):
     return render(request, "MS/fullcalendar.html")

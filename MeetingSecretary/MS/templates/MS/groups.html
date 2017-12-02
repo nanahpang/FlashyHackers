@@ -13,9 +13,13 @@
 	<div class="row">
 		<div class="col-md">
 			<h4 id="admin-name">Administrator: </h4>
-			<p>Members: </p>
+			
+            <!-- Where we show the members -->
+            <p>Members: </p>
 			<ol>
 			</ol>
+
+            <!-- Only the admin could see the functionalities like delete member -->
             {% if is_admin == 1 %}
 			Add a new member: <form id = "addnewmember" method = "POST">
 				
@@ -127,7 +131,7 @@
 			</div>
 			<div class="modal-footer">
 			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-			<button type="button" class="btn btn-primary" id="sendinvitation">Change the information</button>
+			<button type="button" class="btn btn-primary" id="changeinformation">Change the information</button>
 			</div>
 		</div>
 		</div>
@@ -151,7 +155,7 @@
 			data: {group_name, title, description, start_time,end_time, csrfmiddlewaretoken:'{{ csrf_token}}'},
 			dataType: 'json',
 			success: function(data) {
-				alert("success");
+				alert("add meeting success\ninvitations are on the way");
 			}
 		});
 
@@ -176,7 +180,6 @@ $(document).ready(function(){
 					$("ol").append("<li>" + data['member'][i]+ "</li>");
 			}
 		});
-
 		$.ajax({
 			type: 'POST',
 			url: '/ajax/showmeeting/',
@@ -191,6 +194,7 @@ $(document).ready(function(){
 				}
 				else {
 					for (var i = 0; i < meeting_count; ++i) {
+                        id = data[i]['id'];
 						title = data[i]['title'];
 						description = data[i]['description'];
 						start_time = data[i]['start_time'];
@@ -200,6 +204,7 @@ $(document).ready(function(){
 						show_data.push(description);
 						show_data.push(start_time);
 						show_data.push(end_time);
+                        show_data.push(id);
 						var card = document.createElement('div');
 						card.setAttribute("class","card");
 						card.setAttribute("style","width: 20rem;");
@@ -213,15 +218,40 @@ $(document).ready(function(){
 						meeting_time.innerHTML=start_time + '-' + end_time;
 						var meeting_description = document.createElement('p');
 						meeting_description.setAttribute("class","card-text");
-						meeting_description.innerHTML=description;
+                        meeting_description.innerHTML = 'Description:<br>';
+                        meeting_description.innerHTML += '&nbsp;&nbsp;&nbsp;&nbsp;';
+						meeting_description.innerHTML += description;
+
+                        
+                        /* bai! show the meeting members */
+						var meeting_members_div = document.createElement('p');
+                        meeting_members_div.setAttribute("class", "card-text");
+						meeting_members = data[i]['meetingmembers'];
+                        meeting_members_div.innerHTML = 'Meeting members:<br>';
+                        for (var j = 0; j < meeting_members.length; j++) {
+                            meeting_members_div.innerHTML += '&nbsp;&nbsp;&nbsp;&nbsp;';
+                            meeting_members_div.innerHTML += meeting_members[j];
+                            meeting_members_div.innerHTML += '<br>';
+                        }
+                        var meeting_delete = document.createElement('button');
+                        meeting_delete.setAttribute("class", "btn btn-primary");
+                        meeting_delete.innerHTML = "Delete";
+                        meeting_delete.onclick = function(){ delete_meeting(show_data)};
+    
+
 						var meeting_view = document.createElement('button');
 						meeting_view.setAttribute("class","btn btn-primary");
 						meeting_view.innerHTML = "Change";
 						meeting_view.onclick = function(){ change_meeting(show_data)};
-						card_body.appendChild(meeting_title);
+                        	
+                        card_body.appendChild(meeting_title);
 						card_body.appendChild(meeting_time);
 						card_body.appendChild(meeting_description);
-						card_body.appendChild(meeting_view);
+                        card_body.appendChild(meeting_members_div);
+                        {% if is_admin == 1 %}
+                        card_body.appendChild(meeting_view);
+                        card_body.appendChild(meeting_delete);
+                        {% endif %}
 						card.appendChild(card_body);
 						$("#meeting-cards").append(card);
 					}
@@ -318,10 +348,45 @@ $(document).ready(function(){
 				start_time.setAttribute("value",show_data[2]);
 				var end_time = document.getElementById('mi-end-time');
 				end_time.setAttribute("value",show_data[3]);
-				
+			    var id = show_data[4];
+
+                // bai!
+                $("#changeinformation").on('click', function(){
+                    var url = window.location.href;
+                    var index = url.indexOf("groups") + 7;
+                    var end_index = url.length - 1;
+                    var group_name = url.substring(index, end_index);
+                    var changed_title = document.getElementById("mi-title").value;
+                    var changed_description = document.getElementById("mi-description").value;
+                    var changed_start_time = document.getElementById("mi-start-time").value;
+                    var changed_end_time = document.getElementById("mi-end-time").value;
+                    $.ajax({
+                        type: 'POST',
+                        url: '/ajax/changemeeting/',
+                        data: {group_name, changed_title, changed_description, changed_start_time, changed_end_time, id, csrfmiddlewaretoken:'{{csrf_token}}'},
+                        dataType: 'json',
+                        success: function(data) {
+                            alert("change meeting success!\nnotifications are on the way");
+                        }
+                    });
+                });
 			});
 			$("#MeetingInfoModal").modal('show');	
 		}
+    
+        // bai!
+        function delete_meeting(show_data){
+            var id = show_data[4];
+            $.ajax({
+                type: 'POST',
+                url: '/ajax/deletemeeting/',
+                data: {id, csrfmiddlewaretoken:'{{csrf_token}}'},
+                dataType: 'json',
+                success: function(data) {
+                    alert("delete meeting success!\nnotifications are on the way.");
+                }
+            });
+        }
 </script>
 {% endblock %}
 

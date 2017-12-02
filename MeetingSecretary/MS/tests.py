@@ -3,10 +3,12 @@ import codecs
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User
-from MS.models import Group, Membership
+from MS.models import Group, Membership, Meeting, GroupInvitation, MeetingEventRelationship, MeetingInvitation, Message
 from MS import views
 from MS.forms import SignUpForm, CreatePartialGroupForm
 from django.core.urlresolvers import reverse
+from schedule.models import Calendar, Event
+import datetime
 
 # Create your tests here.
 class PersonalProfileTest(TestCase):
@@ -92,17 +94,59 @@ class PersonalProfileTest(TestCase):
         login = self.client.login(username="User1", password="change")
         self.assertEqual(login, True)
 
-class GroupTest(TestCase):
+class GroupAndMeetingTest(TestCase):
+
+    def convert(self, ddatetime):
+        if ddatetime:
+            ddatetime = ddatetime.split(' ')[0]
+            # print(ddatetime)\
+            ddatetime = ddatetime.split('+')[0]
+            return datetime.datetime.strptime(ddatetime, '%Y-%m-%dT%H:%M:%S')
+        return
+
 
     def setUp(self):
-        self.client = Client()
-        self.User1 = User.objects.create_user(username="User1", first_name="first1", last_name="last1", email="useremail1@server.com", password="password1")
-        self.User2 = User.objects.create_user(username="User2", first_name="first2", last_name="last2", email="useremail2@server.com", password="password2")
-        self.User3 = User.objects.create_user(username="User3", first_name="first3", last_name="last3", email="useremail3@server.com", password="password3")
-        self.Group1 = Group.objects.create(name="Group1", admin=self.User2)
-        self.Membership = Membership.objects.create(group=self.Group1, member=self.User2)
 
-    def test_create_and_view(self):
+
+
+        self.client = Client()
+        # User1: Not in any group or meeting
+        self.User1 = User.objects.create_user(username="User1", first_name="first1", last_name="last1", email="useremail1@server.com", password="password1")
+        calendar1 = Calendar(name="User1"+"_cal", slug="User1")
+        calendar1.save()
+        calendar1.create_relation(self.User1)
+
+        # User2: admin of Group1, Meeting1
+        self.User2 = User.objects.create_user(username="User2", first_name="first2", last_name="last2", email="useremail2@server.com", password="password2")
+        calendar2 = Calendar(name="User2"+"_cal", slug="User2")
+        calendar2.save()
+        calendar2.create_relation(self.User2)
+
+        # User3, Not in any group or meeting
+        self.User3 = User.objects.create_user(username="User3", first_name="first3", last_name="last3", email="useremail3@server.com", password="password3")
+        calendar3 = Calendar(name="User3"+"_cal", slug="User3")
+        calendar3.save()
+        calendar3.create_relation(self.User3)
+
+        # User4, In Group1, Meeting1
+        self.User4 = User.objects.create_user(username="User4", first_name="first4",last_name="last3", email="useremail3@server.com", password="password3")
+        calendar4 = Calendar(name="User4"+"_cal", slug="User4")
+        calendar4.save()
+        calendar4.create_relation(self.User4)
+
+        self.Group1 = Group.objects.create(name="Group1", admin=self.User2)
+        self.Membership12 = Membership.objects.create(group=self.Group1, member=self.User2)
+        self.Membership14 = Membership.objects.create(group=self.Group1, member=self.User4)
+        self.Meeting1 = Meeting.objects.create(group=self.Group1, title="testtitle",
+                description="testdescription", start_time=self.convert('2017-12-04T00:00:00'), end_time=self.convert('2017-12-05T00:00:00'))
+        self.Event2 = Event.objects.create(start=self.convert('2017-12-04T00:00:00'), end=self.convert('2017-12-05T00:00:00'), title=self.Meeting1.title, description=self.Meeting1.description, creator=self.User2,calendar_id=calendar2.id)
+
+        self.Event4 = Event.objects.create(start=self.convert('2017-12-04T00:00:00'), end=self.convert('2017-12-05T00:00:00'), title=self.Meeting1.title, description=self.Meeting1.description, creator=self.User4, calendar_id=calendar4.id)
+
+        self.MeetingEventRelationship12 = MeetingEventRelationship.objects.create(meeting=self.Meeting1, event=self.Event2)
+        self.MeetingEventRelationship14 = MeetingEventRelationship.objects.create(meeting=self.Meeting1, event=self.Event4)
+
+    def test_create_and_view_a_group(self):
         login = self.client.login(username="User1", password="password1")
         post1 = {"name": "newgroup"}
         post2 = {"username": "User1"}
@@ -126,7 +170,7 @@ class GroupTest(TestCase):
         #test newly created group is shown
         self.assertEqual(data["admin"], ["newgroup"])
         self.assertEqual(data["member"], ["newgroup"])
-        # If there are groups with same name?
+        # notice! Haven't tested the meeting shown
 
     def test_delete_group(self):
         login = self.client.login(username="User2", password="password2")
@@ -135,20 +179,26 @@ class GroupTest(TestCase):
         response = self.client.post(reverse("deletegroup"), post1)
         groups = Group.objects.filter(name="Group1")
         membership = Membership.objects.filter(group="Group1")
+        meetingMembership = MeetingEventRelationship.objects.filter(meeting=self.Meeting1)
         self.assertEqual(len(groups), 1)
-        self.assertEqual(len(membership), 1)
+        self.assertEqual(len(membership), 2)
+        self.assertEqual(len(meetingMembership), 2)
         response = self.client.post(reverse("deletegroup"), post2)
         groups = Group.objects.filter(name="Group1")
-        membership = Membership.objects.filter(group="Group1")
+        membership = Membership.objects.filter(group=self.Group1)
+        meeting = Meeting.objects.filter(group=self.Group1)
+        meetingMembership = MeetingEventRelationship.objects.filter(meeting=self.Meeting1)
         self.assertEqual(len(groups), 0)
         self.assertEqual(len(membership), 0)
+        self.assertEqual(len(meeting), 0)
+        self.assertEqual(len(meetingMembership), 0)
 
-    def test_add_member_and_accept(self):
+    def test_add_member_and_accept_or_reject_group_invitation(self):
         login = self.client.login(username="User2", password="password2")
-        post1 = {"group_name": "Group1", "memberid": "User1", "operationuser": "User2", "messages": "hello"}
-        post2 = {"group_name": "Group1", "memberid": "User4", "operationuser": "User2", "messages": "hello"}
-        post3 = {"group_name": "Group1", "memberid": "User3", "operationuser": "User1", "messages": "hello"}
-        post4 = {"groupname": "Group1", "username": "User1"}
+        post1 = {"group_name": "Group1", "memberid": "User1", "group_admin": "User2", "messages": "hello"}
+        post2 = {"group_name": "Group1", "memberid": "User10", "group_admin": "User2", "messages": "hello"}
+        post3 = {"group_name": "Group1", "memberid": "User3", "group_admin": "User1", "messages": "hello"}
+        post4 = {"group_name": "Group1", "username": "User1"}
         response = self.client.post(reverse("addnewmember"), post1)
         data = json.loads(response.content.decode('utf-8'))
         self.assertEqual(data["valid"], "true")
@@ -158,9 +208,24 @@ class GroupTest(TestCase):
         response = self.client.post(reverse("addnewmember"), post3)
         data = json.loads(response.content.decode('utf-8'))
         self.assertEqual(data["valid"], "false")
+
+        response = self.client.post(reverse("reject_group"), post4)
+        membership = Membership.objects.filter(group="Group1", member=self.User1)
+        self.assertEqual(len(membership), 0)
+        # notice! All the recievings of messages are not tested
+
         response = self.client.post(reverse("accept"), post4)
+        membership = Membership.objects.filter(group="Group1", member=self.User1)
+        self.assertEqual(len(membership), 1) #accept invitation from group for the first time
         data = json.loads(response.content.decode('utf-8'))
         self.assertEqual(data["valid"], "true")
+
+        response = self.client.post(reverse("accept"), post4)
+        membership = Membership.objects.filter(group="Group1", member=self.User1)
+        self.assertEqual(len(membership), 1) #accept invitation from group for the second time
+        data = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(data["valid"], "false")
+
 
 
     def test_view_one_group(self):
@@ -174,18 +239,96 @@ class GroupTest(TestCase):
         self.assertTrue("User2" in data["member"])
 
 
-    def test_delete_member(self):
+    def test_delete_member_from_group(self):
         login = self.client.login(username="User2", password="password2")
         Membership.objects.create(group=self.Group1, member=self.User1)
-        post1 = {"group_name": "Group1", "memberid": "User1", "operationuser": "User2"}
+        post1 = {"group_name": "Group1", "memberid": "User4", "operationuser": "User2"} # delete member in the group(attend a meeting)
         post2 = {"group_name": "Group1", "memberid": "User2", "operationuser": "User2"} # admin should not be able to delete himself/herself
         post3 = {"group_name": "Group1", "memberid": "User3", "operationuser": "User1"}
         response = self.client.post(reverse("deletemember"), post1)
         data = json.loads(response.content.decode("utf-8"))
+        membership = Membership.objects.filter(member=self.User4)
+        meetingmembership = MeetingEventRelationship.objects.filter(meeting=self.Meeting1)
+        self.assertEqual(len(meetingmembership), 1)
+        self.assertEqual(len(membership), 0)
         self.assertEqual(data["valid"], "true")
+
         response = self.client.post(reverse("deletemember"), post2)
         data = json.loads(response.content.decode("utf-8"))
         self.assertEqual(data["valid"], "false")
         response = self.client.post(reverse("deletemember"), post3)
         data = json.loads(response.content.decode("utf-8"))
         self.assertEqual(data["valid"], "false")
+
+    def test_create_and_view_meeting_and_invitation(self):
+        login = self.client.login(username="User2", password="password2")
+        post1 = {"group_name": "Group1", "title": "title2", "description": "description2",
+                "start_time": "2017-08-15", "end_time": "2017-08-16"}
+        post2 = {"group_name": "Group1", "title": "title2", "description": "description2",
+                "end_time": "2017-08-16"}
+        post3 = {"group_name": "Group1"}
+        post4 = {"username": "User4"}
+        # notice! haven't tested time empty
+        response = self.client.post(reverse("add_meeting"), post1)
+        meeting = Meeting.objects.filter(group='Group1')
+        mer = MeetingEventRelationship.objects.filter(meeting=meeting[1])
+        self.assertEqual(len(meeting), 2)
+        self.assertEqual(len(mer), 1)
+        data = json.loads(response.content.decode("utf-8"))
+        self.assertEqual(data["valid"], "true")
+        # test view meetings
+        response = self.client.post(reverse("show_meetings"), post3)
+        data = response.content.decode("utf-8")
+        self.assertTrue("title2" in data)
+        self.assertTrue("description2" in data)
+        self.assertTrue("User2" in data)
+        # test view invitation
+        response = self.client.post(reverse("view_meetinginvitation"), post4)
+        data = response.content.decode("utf-8")
+        self.assertTrue("title2" in data)
+        self.assertTrue("description2" in data)
+
+
+    def test_handleinvitation(self):
+        login = self.client.login(username="User2", password="password2")
+        post1 = {"group_name": "Group1", "title": "title2", "description": "description2",
+                "start_time": "2017-08-15T00:00:00", "end_time": "2017-08-16T00:00:00"}
+        post2 = {"username": "User4"}
+        meeting_info = []
+        meeting_info.append("title2")
+        meeting_info.append("description2")
+        meeting_info.append("Group1")
+        meeting_info.append("2017-08-15T00:00:00")
+        meeting_info.append("2017-08-16T00:00:00")
+
+        meeting_info_rej = []
+        meeting_info_rej.append("title2")
+        meeting_info_rej.append("Group1")
+
+        #first add a meeting to send invitation
+        response = self.client.post(reverse("add_meeting"), post1)
+        response = self.client.post(reverse("view_meetinginvitation"), post2)
+        data = response.content.decode("utf-8")
+        data = json.loads(data)
+        # get the meeting id
+        meetingid = data[0]['meeting']['id']
+        meeting_info.append(meetingid)
+        meeting_info_rej.append(meetingid)
+        post3 = {"meeting_info[]": meeting_info, "username": "User4"}
+        post4 = {"meeting_info[]": meeting_info_rej, "username":"User4"}
+        # reject the meeting
+        response = self.client.post(reverse("reject_meeting"), post4)
+        meeting = Meeting.objects.filter(id=meetingid)
+        self.assertEqual(len(meeting), 1)
+        mer = MeetingEventRelationship.objects.filter(meeting=meeting)
+        self.assertEqual(len(mer), 1)
+        # accept the meeting
+        response = self.client.post(reverse("accept_meeting"), post3)
+        meeting = Meeting.objects.filter(id=meetingid)
+        self.assertEqual(len(meeting), 1)
+        mer = MeetingEventRelationship.objects.filter(meeting=meeting)
+        self.assertEqual(len(mer), 2)
+        data = response.content.decode("utf-8")
+        data = json.loads(data)
+        self.assertEqual(data['valid'], 'true')
+

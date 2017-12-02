@@ -2,6 +2,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from schedule.models import Event
+
 
 # Create your models here.
 
@@ -43,6 +45,10 @@ class GroupInvitation(models.Model):
 		if not self.id:
 			self.sent_at = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
 		super(GroupInvitation, self).save(**kwargs)
+
+class MeetingEventRelationship(models.Model):
+        meeting = models.ForeignKey(Meeting)
+        event = models.ForeignKey(Event)
 
 class MeetingInvitation(models.Model):
 	sender = models.ForeignKey(User, related_name = 'send_mi')
