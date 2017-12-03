@@ -503,8 +503,7 @@ def accept_meeting(request):
     start_time = meeting_info[3]
     end_time = meeting_info[4]
     meetingid = meeting_info[5]
-    print(start_time)
-    print(end_time)
+    
     # judge whether the member is in the meeting already
     meeting = Meeting.objects.get(id = meetingid)
     mers = MeetingEventRelationship.objects.filter(meeting=meeting)
@@ -528,8 +527,7 @@ def accept_meeting(request):
         if '-' in start_time:
             def convert(ddatetime):
                 if ddatetime:
-                    ddatetime = ddatetime.split(' ')[0]
-                    # print(ddatetime)\
+                    # ddatetime = ddatetime.split(' ')[0]
                     ddatetime = ddatetime.split('+')[0]
                     print("ddatetime is " + ddatetime)
                     time = datetime.datetime.strptime(ddatetime, '%Y-%m-%dT%H:%M:%S')
@@ -938,9 +936,7 @@ def _api_group(start, end, calendar_slug, timezone):
         def convert(ddatetime):
             if ddatetime:
                 ddatetime = ddatetime.split(' ')[0]
-                # print(ddatetime)\
-                ddatetime = ddatetime.split('+')[0]
-                return datetime.datetime.strptime(ddatetime, '%Y-%m-%dT%H:%M:%S')
+                return datetime.datetime.strptime(ddatetime, '%Y-%m-%d')
     else:
         def convert(ddatetime):
             return datetime.datetime.utcfromtimestamp(float(ddatetime))
@@ -961,8 +957,8 @@ def _api_group(start, end, calendar_slug, timezone):
     if calendar_slug:
         # will raise DoesNotExist exception if no match
         calendars = []
-       # for item in calendar_slug:
-        calendars.append(Calendar.objects.get(slug=item))
+        for item in calendar_slug:
+            calendars.append(Calendar.objects.get(slug=item))
 
         # calendars = [Calendar.objects.get(slug=calendar_slug)]
     # if no calendar slug is given, get all the calendars
