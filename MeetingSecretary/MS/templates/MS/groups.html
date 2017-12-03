@@ -36,16 +36,16 @@
 				<div class="form-row align-items-center">
 					<div class="col-auto">
 					<label class="mr-sm-2" for="inlineFormInputStartTime">Start Time: </label>
-					<input type="text" class="form-control" id="inlineFormInputStartTime" value = "2017-11-25" required>
+						<input type="date" class="form-control" id="inlineFormInputStartTime" value = "2017-11-25" required>
 					</div>
 					<div class="col-auto">
 					<label class="mr-sm-2" for="inlineFormInputEndTime">End Time: </label>
 					<div class="input-group mb-2 mb-sm-0">
-						<input type="text" class="form-control" id="inlineFormInputEndTime" value = "2017-11-26" required>
+						<input type="date" class="form-control" id="inlineFormInputEndTime" value = "2017-11-27" required>
 					</div>
 					</div>
-					<div class="col-auto">
-					<button type="submit" class="btn btn-primary">Search available time slots</button>
+					<div class="col-xs-3">
+					<button type="submit" class="btn btn-primary btn-block">Search available time slots</button>
 					</div>
 				</div>
 			</form>
@@ -54,7 +54,7 @@
 				<li class="list-group-item">Available Time:</li>
 			
 				</ul>
-				<div class="row">
+				<div class="col-xs-3">
 					<button class="btn btn-primary" id="add-a-meeting" data-toggle="modal" data-target="#exampleModal" data-whatever="group_name">Add a meeting</button>
 			    </div>
             {% endif %}

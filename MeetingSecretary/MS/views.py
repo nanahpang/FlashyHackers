@@ -183,7 +183,7 @@ def showgroup(request):
 
     results = []
     for item in data:
-        data_json = item.group
+        # data_json = item.group
         data_json = item.member.username
         results.append(data_json)
     res = {'admin' : admin, 'member' : results}
