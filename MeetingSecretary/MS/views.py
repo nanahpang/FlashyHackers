@@ -192,6 +192,7 @@ def showgroup(request):
     return HttpResponse(res, mimetype)
 
 def showonegroupfunc(request, group_name):
+    print("come here")
     if group_name == '':
         return HttpResponseNotFound('<h1>No Page Here</h1>')
     group = Group.objects.filter(name=group_name)
@@ -211,25 +212,26 @@ def deletegroup(request):
     """
     group_name = request.POST.get('groupid')
     operationuser = request.POST.get('operationuser')
-    q = Group.objects.get(name=group_name)
-    if q.admin.username == operationuser :
-         admin = User.objects.get(username=operationuser)
-         delete_notification = "The group " + group_name + " is removed\n"
-         memberships = Membership.objects.filter(group=q)
-         # send notifications
-         for membership in memberships:
-            member = membership.member
-            if member == admin:
-                continue
-            status = messageHandler.send_message(admin, member, delete_notification)
-            _deletememberfromgroup(group_name, member)
-         #p = Membership.objects.filter(group=q)
-         #p[0].delete()
-         _deletemeetings(q)
-         q.delete()
-         result = 'true'
-    else :
-         result = 'false'
+    q = Group.objects.filter(name=group_name)
+    if len(q) != 0:
+        if q[0].admin.username == operationuser :
+            admin = User.objects.get(username=operationuser)
+            delete_notification = "The group " + group_name + " is removed\n"
+            memberships = Membership.objects.filter(group=q[0])
+            # send notifications
+            for membership in memberships:
+                member = membership.member
+                if member == admin:
+                    continue
+                status = messageHandler.send_message(admin, member, delete_notification)
+                _deletememberfromgroup(group_name, member)
+            _deletemeetings(q[0])
+            q.delete()
+            result = 'true'
+        else :
+            result = 'false-noright'
+    else:
+        result = 'false-nogroup'
     res = {'valid': result}
     res = json.dumps(res)
     mimetype = 'application/json'
@@ -395,6 +397,7 @@ def add_meeting(request):
     ##send invitation to all member
     ###find all member
     memberlist = find_all_members(group, True)
+    result = 'false'
     for member in memberlist:
         if member == admin:
             continue
@@ -500,7 +503,8 @@ def accept_meeting(request):
     start_time = meeting_info[3]
     end_time = meeting_info[4]
     meetingid = meeting_info[5]
-
+    print(start_time)
+    print(end_time)
     # judge whether the member is in the meeting already
     meeting = Meeting.objects.get(id = meetingid)
     mers = MeetingEventRelationship.objects.filter(meeting=meeting)
@@ -527,7 +531,9 @@ def accept_meeting(request):
                     ddatetime = ddatetime.split(' ')[0]
                     # print(ddatetime)\
                     ddatetime = ddatetime.split('+')[0]
-                    return datetime.datetime.strptime(ddatetime, '%Y-%m-%dT%H:%M:%S')
+                    print("ddatetime is " + ddatetime)
+                    time = datetime.datetime.strptime(ddatetime, '%Y-%m-%dT%H:%M:%S')
+                    return time
         else:
             def convert(ddatetime):
                 return datetime.datetime.utcfromtimestamp(float(ddatetime))
@@ -735,6 +741,16 @@ def find_time(request):
         def convert(ddatetime):
             return datetime.datetime.utcfromtimestamp(float(ddatetime))
 
+    #if '-' in start:
+    #    def convert(ddatetime):
+    #        if ddatetime:
+    #            ddatetime = ddatetime.split(' ')[0]
+    #            # print(ddatetime)\
+    #            ddatetime = ddatetime.split('+')[0]
+    #            return datetime.datetime.strptime(ddatetime, '%Y-%m-%dT%H:%M:%S')
+    #else:
+    #    def convert(ddatetime):
+    #        return datetime.datetime.utcfromtimestamp(float(ddatetime))
     start = convert(start)
     end = convert(end)
     current_tz = False
@@ -901,23 +917,33 @@ def _api_group(start, end, calendar_slug, timezone):
         raise ValueError('Start and end parameters are required')
     # version 2 of full calendar
     # TODO: improve this code with date util package
-    if '-' in start:
-        def convert(datetime):
-            """
-            :param datetime: datetime
-            :return: formatted datetime
-            """
-            if datetime:
-                datetime = datetime.split(' ')[0]
-                return datetime.datetime.strptime(datetime, '%Y-%m-%d')
-    else:
-        def convert(datetime):
-            """
-            :param datetime: datetime
-            :return: formatted datetime
-            """
-            return datetime.datetime.utcfromtimestamp(float(datetime))
+    #if '-' in start:
+    #    def convert(datetime):
+    #        """
+    #        :param datetime: datetime
+    #        :return: formatted datetime
+    #        """
+    #        if datetime:
+    #            datetime = datetime.split(' ')[0]
+    #            return datetime.datetime.strptime(datetime, '%Y-%m-%d')
+    #else:
+    #    def convert(datetime):
+    #        """
+    #        :param datetime: datetime
+    #        :return: formatted datetime
+    #        """
+    #        return datetime.datetime.utcfromtimestamp(float(datetime))
 
+    if '-' in start:
+        def convert(ddatetime):
+            if ddatetime:
+                ddatetime = ddatetime.split(' ')[0]
+                # print(ddatetime)\
+                ddatetime = ddatetime.split('+')[0]
+                return datetime.datetime.strptime(ddatetime, '%Y-%m-%dT%H:%M:%S')
+    else:
+        def convert(ddatetime):
+            return datetime.datetime.utcfromtimestamp(float(ddatetime))
     start = convert(start)
     end = convert(end)
     current_tz = False
@@ -935,8 +961,8 @@ def _api_group(start, end, calendar_slug, timezone):
     if calendar_slug:
         # will raise DoesNotExist exception if no match
         calendars = []
-        for item in calendar_slug:
-            calendars.append(Calendar.objects.get(slug=item))
+       # for item in calendar_slug:
+        calendars.append(Calendar.objects.get(slug=item))
 
         # calendars = [Calendar.objects.get(slug=calendar_slug)]
     # if no calendar slug is given, get all the calendars

@@ -36,26 +36,26 @@
 				<div class="form-row align-items-center">
 					<div class="col-auto">
 					<label class="mr-sm-2" for="inlineFormInputStartTime">Start Time: </label>
-						<input type="date" class="form-control" id="inlineFormInputStartTime" value = "2017-11-25" required>
+						<input type="date" class="form-control" id="inlineFormInputStartTime" value = "2017-12-04" required>
 					</div>
 					<div class="col-auto">
 					<label class="mr-sm-2" for="inlineFormInputEndTime">End Time: </label>
 					<div class="input-group mb-2 mb-sm-0">
-						<input type="date" class="form-control" id="inlineFormInputEndTime" value = "2017-11-27" required>
+						<input type="date" class="form-control" id="inlineFormInputEndTime" value = "2017-12-05" required>
 					</div>
 					</div>
 					<div class="col-xs-3">
-					<button type="submit" class="btn btn-primary btn-block">Search available time slots</button>
+					<button type="submit" class="btn btn-primary btn-block" style="margin-top:5px; margin-bottom:15px">Search available time slots</button>
 					</div>
 				</div>
 			</form>
 			
-				<ul class="list-group" id="time-slots-list">
+				<ul class="list-group" id="time-slots-list" stype="margin-top:5px">
 				<li class="list-group-item">Available Time:</li>
 			
 				</ul>
 				<div class="col-xs-3">
-					<button class="btn btn-primary" id="add-a-meeting" data-toggle="modal" data-target="#exampleModal" data-whatever="group_name">Add a meeting</button>
+					<button class="btn btn-primary" id="add-a-meeting" style="margin-top:5px" data-toggle="modal" data-target="#exampleModal" data-whatever="group_name">Add a meeting</button>
 			    </div>
             {% endif %}
 			<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -74,13 +74,13 @@
 						<input type="text" class="form-control" id="title" value="study">
 						</div>
 						<div class="form-group">
-						<label for="start-time" class="col-form-label">Start time:</label>
-						<input class="form-control" id="start-time" value="2017-12-04"></input>
+						    <label for="start-time" class="col-form-label">Start time:</label>
+						    <input class="form-control" id="start-time" value="2017-12-04T15:00:00+00:00"></input>
 						</div>
 						<div class="form-group">
 							<label for="end-time" class="col-form-label">End time:</label>
-							<input class="form-control" id="end-time" value="2017-12-05"></input>
-					</div>
+							<input class="form-control" id="end-time" value="2017-12-05T17:00:00+00:00"></input>
+					    </div>
 					<div class="form-group">
 							<label for="description" class="col-form-label">Description: </label>
 							<textarea class="form-control" id="description" value="study"></textarea>
@@ -104,7 +104,7 @@
 		<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
-			<h5 class="modal-title" id="MeetingInfoModal">Meeting Infomation</h5>
+			<h5 class="modal-title" id="MeetingInfoModal1">Meeting Infomation</h5>
 			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 				<span aria-hidden="true">&times;</span>
 			</button>
@@ -156,6 +156,7 @@
 			dataType: 'json',
 			success: function(data) {
 				alert("add meeting success\ninvitations are on the way");
+                window.location.reload();
 			}
 		});
 
@@ -329,12 +330,14 @@ $(document).ready(function(){
 				data: {start_time, end_time, group_name, csrfmiddlewaretoken: '{{ csrf_token }}'},
 				dataType: 'json',
 				success: function(data) {
-					alert("success");
-					alert(data['slots']);
+					alert("search time success");
+					//alert(data['slots']);
 					var slot_count = data['slots'].length;
-					alert(slot_count);
+					//alert(slot_count);
+                    $("#time-slots-list").find("li").remove();
+                    $("#time-slots-list").append("<li class='list-group-item'>Available Time:</li>");
 					for (var i = 0; i < slot_count; ++i) {
-						alert(data['slots'][i]);
+						//alert(data['slots'][i]);
 						var start = data['slots'][i][0];
 						var end = data['slots'][i][1];
 						//add time converter;
@@ -374,6 +377,7 @@ $(document).ready(function(){
                         dataType: 'json',
                         success: function(data) {
                             alert("change meeting success!\nnotifications are on the way");
+                            window.location.reload();
                         }
                     });
                 });
@@ -391,6 +395,7 @@ $(document).ready(function(){
                 dataType: 'json',
                 success: function(data) {
                     alert("delete meeting success!\nnotifications are on the way.");
+                    window.location.reload();
                 }
             });
         }
