@@ -237,7 +237,8 @@
                   if(data['valid'] == 'true')
                       alert("You have rejected the invitation of group "+ groupname + " .  :-(");
                   else 
-                    alert("Something happened. :(");				
+                    alert("Something happened. :(");
+                  window.location.reload();
                 }
             }); 
           });
@@ -266,7 +267,8 @@
         if(data['valid'] == 'true')
             alert("You will not go to the meeting "+ meeting_info[0] + " .  :-(");
         else 
-          alert("Something happened. :(");				
+          alert("Something happened. :(");
+        window.location.reload();
       }
   }); 
   }
@@ -296,7 +298,8 @@
               if(data['valid'] == 'true')
                   alert("This meeting has been added to your canlendar "+ " successfully! You can see that in your canlendar.");
               else 
-                alert("Something happened. :(");				
+                alert("Something happened. :(");
+              window.location.reload();
             }
         });
         };

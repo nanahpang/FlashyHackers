@@ -221,10 +221,10 @@ class GroupAndMeetingTest(TestCase):
         self.assertEqual(data["valid"], "true")
         response = self.client.post(reverse("addnewmember"), post2)
         data = json.loads(response.content.decode('utf-8'))
-        self.assertEqual(data["valid"], "false")
+        self.assertEqual(data["valid"], "false-nomember")
         response = self.client.post(reverse("addnewmember"), post3)
         data = json.loads(response.content.decode('utf-8'))
-        self.assertEqual(data["valid"], "false")
+        self.assertEqual(data["valid"], "false-noright")
 
         # the invitation of User1 exists
         invitation = GroupInvitation.objects.filter(recipient=self.User1)
@@ -285,10 +285,10 @@ class GroupAndMeetingTest(TestCase):
         self.assertTrue("You are removed from meeting testtitle" in data)
         response = self.client.post(reverse("deletemember"), post2)
         data = json.loads(response.content.decode("utf-8"))
-        self.assertEqual(data["valid"], "false")
+        self.assertEqual(data["valid"], "false-self")
         response = self.client.post(reverse("deletemember"), post3)
         data = json.loads(response.content.decode("utf-8"))
-        self.assertEqual(data["valid"], "false")
+        self.assertEqual(data["valid"], "false-noright")
 
     def test_create_and_view_meeting_and_invitation(self):
         login = self.client.login(username="User2", password="password2")

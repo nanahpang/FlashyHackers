@@ -250,7 +250,9 @@ def addnewmember(request):
         from_user = group.admin
         member = User.objects.filter(username=member_id)
         if len(member) == 0:
-            result = 'false'
+            result = 'false-nomember'
+        elif member[0] == group.admin:
+            result = 'false-self'
         else:
             status = sendgroupinvitation(from_user, member[0], group)
             if status == True:
@@ -258,7 +260,7 @@ def addnewmember(request):
             else:
                 result = 'false'
     else:
-        result = 'false'
+        result = 'false-noright'
     res = {'valid': result}
     res = json.dumps(res)
     mimetype = 'application/json'
@@ -274,11 +276,15 @@ def deletemember(request):
     operationuser = request.POST.get('operationuser')
     group = Group.objects.get(name=group_name)
     if group.admin.username == operationuser and member_id != operationuser:
-        member = User.objects.get(username=member_id)
-        _deletememberfromgroup(group_name, member)
-        result = 'true'
+        member = User.objects.filter(username=member_id)
+        if len(member) == 0:
+            result = 'false-nomember'
+        else:
+            result = _deletememberfromgroup(group_name, member[0])
+    elif group.admin.username != operationuser:
+        result = 'false-noright'
     else:
-        result = 'false'
+        result = 'false-self'
     res = {'valid': result}
     res = json.dumps(res)
     mimetype = 'application/json'
@@ -286,15 +292,19 @@ def deletemember(request):
 
 
 def _deletememberfromgroup(group_name, member):
-    p = Membership.objects.get(group=group_name, member=member)
-    meetings = Meeting.objects.filter(group=group_name)
-    group = Group.objects.get(name=group_name)
-    message = "You are removed from group " + group_name + '\n'
-    status = messageHandler.send_message(group.admin, member, message)
-    for meeting in meetings:
-        _deletememberfrommeeting(meeting, member)
-    p.delete()
-    result = 'true'
+    p = Membership.objects.filter(group=group_name, member=member)
+    if len(p) == 0:
+        result = 'false-nomember'
+    else:
+        meetings = Meeting.objects.filter(group=group_name)
+        group = Group.objects.get(name=group_name)
+        message = "You are removed from group " + group_name + '\n'
+        status = messageHandler.send_message(group.admin, member, message)
+        for meeting in meetings:
+            _deletememberfrommeeting(meeting, member)
+        p[0].delete()
+        result = 'true'
+    return result
 
 def _deletememberfrommeeting(meeting, member):
     events = Event.objects.filter(creator=member)

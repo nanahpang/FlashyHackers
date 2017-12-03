@@ -279,10 +279,12 @@ $(document).ready(function(){
 				data: {group_name, group_admin, memberid, csrfmiddlewaretoken: '{{ csrf_token }}'},
 				dataType:'json',
 				success:function(data){
-					if(data['valid'] == 'true')
+					if (data['valid'] == 'true')
 						alert("Your invitation is on the way!");
-					else
-						alert("Send failed.:(")
+					else if (data['valid'] == 'false-nomember')
+						alert("Send failed.:( the member doesn't exist");
+                    else
+                        alert("Send failed.:( you cannot send invitation to yourself");
 				}
 			});
 		});
@@ -293,17 +295,22 @@ $(document).ready(function(){
 			var operationuser = '{{ user.username }}'
 			var url = window.location.href;
 			var index = url.indexOf("groups") + 7;
-			var group_name = url.substring(index);
+            var end_index = url.length - 1;
+			var group_name = url.substring(index, end_index);
 			$.ajax({
 				type: "POST",
 				url: "/ajax/deletemember/",
 				data: {memberid,group_name,operationuser,csrfmiddlewaretoken: '{{ csrf_token }}'},
 				dataType:'json',
 				success:function(data){
-					if(data['valid'] == 'true')
+                    if(data['valid'] == 'true') {
 						alert("User "+ memberid + " has been removed from group " + group_name + "! Please refresh the page to see your group.");
-					else
-						alert("You have no authorization to delete people to this group.")
+                        window.location.reload();
+                    }
+					else if (data['valid'] == 'false-nomember')
+                        alert("The member doesn't exist");
+                    else
+						alert("You cannot delete yourself from a group")
 				}
 			});
 		});
