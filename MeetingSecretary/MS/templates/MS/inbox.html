@@ -219,9 +219,10 @@
                 dataType: 'json',
                 success: function(data){
                   if(data['valid'] == 'true')
-                      alert("You have joined group "+ groupname + " successfully! Please refresh to check your groups.");
+                      alert("You have joined group "+ groupname + " successfully!");
                   else 
                     alert("Something happened. :(");				
+                  window.location.reload();
                 }
             }); 
           });

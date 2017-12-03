@@ -193,17 +193,10 @@ def showgroup(request):
 
 def showonegroupfunc(request, group_name):
     if group_name == '':
-        print('empty')
         return HttpResponseNotFound('<h1>No Page Here</h1>')
     group = Group.objects.filter(name=group_name)
     if len(group) == 0:
-        print('noneexist')
         return HttpResponseNotFound('<h1>No Page Here</h1>')
-    print(group[0].name)
-    print(group[0].admin.username)
-    print(group[0].admin)
-    print(request.user)
-    print(request.user.username)
     if group[0].admin != request.user:
         return render(request, 'MS/groups.html', {'is_admin': 0})
     return render(request, 'MS/groups.html', {'is_admin': 1})
@@ -220,9 +213,19 @@ def deletegroup(request):
     operationuser = request.POST.get('operationuser')
     q = Group.objects.get(name=group_name)
     if q.admin.username == operationuser :
+         admin = User.objects.get(username=operationuser)
+         delete_notification = "The group " + group_name + " is removed\n"
+         memberships = Membership.objects.filter(group=q)
+         # send notifications
+         for membership in memberships:
+            member = membership.member
+            if member == admin:
+                continue
+            status = messageHandler.send_message(admin, member, delete_notification)
+            _deletememberfromgroup(group_name, member)
+         #p = Membership.objects.filter(group=q)
+         #p[0].delete()
          _deletemeetings(q)
-         p  = Membership.objects.filter(group=group_name)
-         p[0].delete()
          q.delete()
          result = 'true'
     else :
@@ -285,6 +288,9 @@ def deletemember(request):
 def _deletememberfromgroup(group_name, member):
     p = Membership.objects.get(group=group_name, member=member)
     meetings = Meeting.objects.filter(group=group_name)
+    group = Group.objects.get(name=group_name)
+    message = "You are removed from group " + group_name + '\n'
+    status = messageHandler.send_message(group.admin, member, message)
     for meeting in meetings:
         _deletememberfrommeeting(meeting, member)
     p.delete()
@@ -292,6 +298,8 @@ def _deletememberfromgroup(group_name, member):
 
 def _deletememberfrommeeting(meeting, member):
     events = Event.objects.filter(creator=member)
+    message = "You are removed from meeting " + meeting.title + '\n'
+    status = messageHandler.send_message(meeting.group.admin, member, message)
     for event in events:
         mers = MeetingEventRelationship.objects.filter(meeting=meeting, event=event)
         for mer in mers:
@@ -404,7 +412,6 @@ def show_meetings(request):
         for re in allmeetingrelationship:
             event = re.event
             user = User.objects.get(username=event.creator.username)
-            print("the name is" + user.username)
             meetingmembers.append(user.username)
 
 
@@ -483,50 +490,56 @@ def accept_meeting(request):
     start_time = meeting_info[3]
     end_time = meeting_info[4]
     meetingid = meeting_info[5]
-    group = Group.objects.get(name=group_name)
-    #send notification to admin
-    admin = Group.objects.get(name=group_name).admin
-    member = User.objects.get(username = username)
-    message = username+ ' will attend the meeting ' + title + 'of group ' + group_name + '.'
-    status = messageHandler.send_message(member, admin, message)
-    if status == 200:
-        result = 'true'
-    else:
-        retult = 'false'
-    #store an event of that user
-    ##add event
-    if '-' in start_time:
-        def convert(ddatetime):
-            if ddatetime:
-                ddatetime = ddatetime.split(' ')[0]
-                # print(ddatetime)\
-                ddatetime = ddatetime.split('+')[0]
-                print(ddatetime)
-                return datetime.datetime.strptime(ddatetime, '%Y-%m-%dT%H:%M:%S')
-    else:
-        def convert(ddatetime):
-            return datetime.datetime.utcfromtimestamp(float(ddatetime))
 
-    start_time = convert(start_time)
-    end_time = convert(end_time)
-    event = Event(title=title, description=description, start=start_time, end=end_time)
-    user = User.objects.get(username=username)
-    calendar = Calendar.objects.get(slug=username)
-    event.creator = user
-    event.calendar = calendar
-    event.save()
-        # return HttpResponseRedirect(event.get_absolute_url())
-
-
-
+    # judge whether the member is in the meeting already
     meeting = Meeting.objects.get(id = meetingid)
-    messageHandler.set_meetinginvitation_accept(member, group, meeting)
-    #increase attendees
+    mers = MeetingEventRelationship.objects.filter(meeting=meeting)
+    result = 'false'
+    for mer in mers:
+        if mer.event.creator.username == username:
+            result = 'true'
+            break
 
-    #bai! add meeting event relationship
-    mer = MeetingEventRelationship(meeting=meeting, event=event)
+    if result == 'false':
+        group = Group.objects.get(name=group_name)
+        #send notification to admin
+        admin = Group.objects.get(name=group_name).admin
+        member = User.objects.get(username = username)
+        message = username+ ' will attend the meeting ' + title + 'of group ' + group_name + '.'
+        status = messageHandler.send_message(member, admin, message)
+        if status == 200:
+            result = 'true'
+        else:
+            retult = 'false'
+        if '-' in start_time:
+            def convert(ddatetime):
+                if ddatetime:
+                    ddatetime = ddatetime.split(' ')[0]
+                    # print(ddatetime)\
+                    ddatetime = ddatetime.split('+')[0]
+                    return datetime.datetime.strptime(ddatetime, '%Y-%m-%dT%H:%M:%S')
+        else:
+            def convert(ddatetime):
+                return datetime.datetime.utcfromtimestamp(float(ddatetime))
 
-    mer.save()
+        #store an event of that user
+        ##add event
+        start_time = convert(start_time)
+        end_time = convert(end_time)
+        event = Event(title=title, description=description, start=start_time, end=end_time)
+        user = User.objects.get(username=username)
+        calendar = Calendar.objects.get(slug=username)
+        event.creator = user
+        event.calendar = calendar
+        event.save()
+
+        # accept the invitation
+        messageHandler.set_meetinginvitation_accept(member, group, meeting)
+        #increase attendees
+
+        # add meeting event relationship
+        mer = MeetingEventRelationship(meeting=meeting, event=event)
+        mer.save()
     res = {'valid': result}
     res = json.dumps(res)
     mimetype = 'application/json'
@@ -629,7 +642,7 @@ def view_notification(request):
             'content' : item.content,
             'sent_at' : item.sent_at.isoformat()
         }
-        messages.append(msg)
+        messages_list.append(msg)
     res = json.dumps(messages_list)
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
@@ -725,8 +738,6 @@ def find_time(request):
         utc = pytz.UTC
         start = utc.localize(start)
         end = utc.localize(end)
-    print(start)
-    print(end)
     if members:
         # will raise DoesNotExist exception if no match
         calendars = []
@@ -813,9 +824,12 @@ def _deletemeetings(group):
 
 def _deletemeeting(meeting):
     mers = MeetingEventRelationship.objects.filter(meeting=meeting)
+    message = "Meeting " + meeting.title + " is deleted\n"
     if len(mers) == 0:
         return
     for mer in mers:
+        if mer.event.creator != meeting.group.admin:
+            status = messageHandler.send_message(meeting.group.admin, mer.event.creator, message)
         event = mer.event
         event.delete()
         mer.delete()

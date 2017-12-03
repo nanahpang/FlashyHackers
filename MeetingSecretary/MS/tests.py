@@ -8,7 +8,9 @@ from MS import views
 from MS.forms import SignUpForm, CreatePartialGroupForm
 from django.core.urlresolvers import reverse
 from schedule.models import Calendar, Event
+from .messageHandler import MessageHandler
 import datetime
+messageHandler = MessageHandler()
 
 # Create your tests here.
 class PersonalProfileTest(TestCase):
@@ -106,10 +108,8 @@ class GroupAndMeetingTest(TestCase):
 
 
     def setUp(self):
-
-
-
         self.client = Client()
+
         # User1: Not in any group or meeting
         self.User1 = User.objects.create_user(username="User1", first_name="first1", last_name="last1", email="useremail1@server.com", password="password1")
         calendar1 = Calendar(name="User1"+"_cal", slug="User1")
@@ -146,6 +146,15 @@ class GroupAndMeetingTest(TestCase):
         self.MeetingEventRelationship12 = MeetingEventRelationship.objects.create(meeting=self.Meeting1, event=self.Event2)
         self.MeetingEventRelationship14 = MeetingEventRelationship.objects.create(meeting=self.Meeting1, event=self.Event4)
 
+    def test_send_message(self):
+        login = self.client.login(username="User2", password="password2")
+        message = "test send message\n"
+        post1 = {"username": self.User4.username}
+        status = messageHandler.send_message(self.User2, self.User4, message)
+        response = self.client.post(reverse("view_notification"), post1)
+        data = response.content.decode('utf-8')
+        self.assertTrue("test send message" in data)
+
     def test_create_and_view_a_group(self):
         login = self.client.login(username="User1", password="password1")
         post1 = {"name": "newgroup"}
@@ -176,6 +185,7 @@ class GroupAndMeetingTest(TestCase):
         login = self.client.login(username="User2", password="password2")
         post1 = {"groupid": "Group1", "operationuser": "User1"} # User1 doesn't have authorization
         post2 = {"groupid": "Group1", "operationuser": "User2"} # User2 has authorization
+        post3 = {"username": "User4"}
         response = self.client.post(reverse("deletegroup"), post1)
         groups = Group.objects.filter(name="Group1")
         membership = Membership.objects.filter(group="Group1")
@@ -193,6 +203,13 @@ class GroupAndMeetingTest(TestCase):
         self.assertEqual(len(meeting), 0)
         self.assertEqual(len(meetingMembership), 0)
 
+        # user4 could view the notification of group delete
+        response = self.client.post(reverse("view_notification"), post3)
+        data = response.content.decode('utf-8')
+        self.assertTrue("Group1 is removed" in data)
+        self.assertTrue("You are removed from group Group1" in data)
+        self.assertTrue("You are removed from meeting testtitle" in data)
+
     def test_add_member_and_accept_or_reject_group_invitation(self):
         login = self.client.login(username="User2", password="password2")
         post1 = {"group_name": "Group1", "memberid": "User1", "group_admin": "User2", "messages": "hello"}
@@ -209,16 +226,25 @@ class GroupAndMeetingTest(TestCase):
         data = json.loads(response.content.decode('utf-8'))
         self.assertEqual(data["valid"], "false")
 
+        # the invitation of User1 exists
+        invitation = GroupInvitation.objects.filter(recipient=self.User1)
+        self.assertEqual(len(invitation), 1)
+        self.assertEqual(invitation[0].status, 'NO')
+
+        # reject the group invitation
         response = self.client.post(reverse("reject_group"), post4)
         membership = Membership.objects.filter(group="Group1", member=self.User1)
+        invitation = GroupInvitation.objects.filter(recipient=self.User1)
         self.assertEqual(len(membership), 0)
-        # notice! All the recievings of messages are not tested
+        self.assertEqual(invitation[0].status, 'RJ')
 
+        # accept the group invitation
         response = self.client.post(reverse("accept"), post4)
         membership = Membership.objects.filter(group="Group1", member=self.User1)
         self.assertEqual(len(membership), 1) #accept invitation from group for the first time
         data = json.loads(response.content.decode('utf-8'))
         self.assertEqual(data["valid"], "true")
+        self.assertEqual(invitation[0].status, 'AC')
 
         response = self.client.post(reverse("accept"), post4)
         membership = Membership.objects.filter(group="Group1", member=self.User1)
@@ -245,6 +271,7 @@ class GroupAndMeetingTest(TestCase):
         post1 = {"group_name": "Group1", "memberid": "User4", "operationuser": "User2"} # delete member in the group(attend a meeting)
         post2 = {"group_name": "Group1", "memberid": "User2", "operationuser": "User2"} # admin should not be able to delete himself/herself
         post3 = {"group_name": "Group1", "memberid": "User3", "operationuser": "User1"}
+        post4 = {"username": "User4"}
         response = self.client.post(reverse("deletemember"), post1)
         data = json.loads(response.content.decode("utf-8"))
         membership = Membership.objects.filter(member=self.User4)
@@ -252,7 +279,10 @@ class GroupAndMeetingTest(TestCase):
         self.assertEqual(len(meetingmembership), 1)
         self.assertEqual(len(membership), 0)
         self.assertEqual(data["valid"], "true")
-
+        response = self.client.post(reverse("view_notification"), post4)
+        data = response.content.decode("utf-8")
+        self.assertTrue("You are removed from group Group1" in data)
+        self.assertTrue("You are removed from meeting testtitle" in data)
         response = self.client.post(reverse("deletemember"), post2)
         data = json.loads(response.content.decode("utf-8"))
         self.assertEqual(data["valid"], "false")
@@ -289,7 +319,7 @@ class GroupAndMeetingTest(TestCase):
         self.assertTrue("description2" in data)
 
 
-    def test_handleinvitation(self):
+    def test_handle_meeting_invitation(self):
         login = self.client.login(username="User2", password="password2")
         post1 = {"group_name": "Group1", "title": "title2", "description": "description2",
                 "start_time": "2017-08-15T00:00:00", "end_time": "2017-08-16T00:00:00"}
@@ -326,9 +356,52 @@ class GroupAndMeetingTest(TestCase):
         response = self.client.post(reverse("accept_meeting"), post3)
         meeting = Meeting.objects.filter(id=meetingid)
         self.assertEqual(len(meeting), 1)
-        mer = MeetingEventRelationship.objects.filter(meeting=meeting)
+        mer = MeetingEventRelationship.objects.filter(meeting=meeting[0])
         self.assertEqual(len(mer), 2)
         data = response.content.decode("utf-8")
         data = json.loads(data)
         self.assertEqual(data['valid'], 'true')
 
+        # accept the meeting twice
+        response = self.client.post(reverse("accept_meeting"), post3)
+        meeting = Meeting.objects.filter(id=meetingid)
+        mer = MeetingEventRelationship.objects.filter(meeting=meeting[0])
+        self.assertEqual(len(mer), 2)
+        data = response.content.decode("utf-8")
+        data = json.loads(data)
+        self.assertEqual(data['valid'], 'true')
+
+    def test_change_meeting(self):
+        login = self.client.login(username="User2", password="password2")
+        meetingid = self.Meeting1.id
+        post1 = {"id": meetingid, "group_name": "Group1", 'changed_title': "changed_t",
+                "changed_description": "changed_d",
+                "changed_start_time": "2017-08-21T00:00:00", "changed_end_time":
+                "2017-08-21T01:00:00"}
+        post2 = {"username": "User4"}
+        response = self.client.post(reverse("change_meeting"), post1)
+        meetings = Meeting.objects.all()
+        self.assertEqual(len(meetings), 1)
+        meeting = Meeting.objects.filter(id=self.Meeting1.id)
+        mer = MeetingEventRelationship.objects.filter(meeting=self.Meeting1)
+        self.assertEqual(len(mer), 0)
+        self.assertEqual(len(meeting), 0)
+
+        # old meeting is deleted
+        response = self.client.post(reverse("view_notification"), post2)
+        data = response.content.decode("utf-8")
+        self.assertTrue("Meeting testtitle is deleted" in data)
+        # new meeting sends invitation to the member
+        response = self.client.post(reverse("view_meetinginvitation"), post2)
+        data = response.content.decode("utf-8")
+        self.assertTrue("changed_t" in data)
+
+    def test_delete_meeting(self):
+        login = self.client.login(username="User2", password="password2")
+        meetingid = self.Meeting1.id
+        post1 = {"id": meetingid}
+        response = self.client.post(reverse("delete_meeting"), post1)
+        meeting = Meeting.objects.filter(id=self.Meeting1.id)
+        self.assertEqual(len(meeting), 0)
+        mer = MeetingEventRelationship.objects.filter(meeting=self.Meeting1)
+        self.assertEqual(len(mer), 0)
