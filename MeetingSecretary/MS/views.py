@@ -183,7 +183,7 @@ def showgroup(request):
 
     results = []
     for item in data:
-        data_json = item.group
+        # data_json = item.group
         data_json = item.member.username
         results.append(data_json)
     res = {'admin' : admin, 'member' : results}
@@ -483,50 +483,57 @@ def accept_meeting(request):
     start_time = meeting_info[3]
     end_time = meeting_info[4]
     meetingid = meeting_info[5]
-    group = Group.objects.get(name=group_name)
-    #send notification to admin
-    admin = Group.objects.get(name=group_name).admin
-    member = User.objects.get(username = username)
-    message = username+ ' will attend the meeting ' + title + 'of group ' + group_name + '.'
-    status = messageHandler.send_message(member, admin, message)
-    if status == 200:
-        result = 'true'
-    else:
-        retult = 'false'
-    #store an event of that user
-    ##add event
-    if '-' in start_time:
-        def convert(ddatetime):
-            if ddatetime:
-                ddatetime = ddatetime.split(' ')[0]
-                # print(ddatetime)\
-                ddatetime = ddatetime.split('+')[0]
-                print(ddatetime)
-                return datetime.datetime.strptime(ddatetime, '%Y-%m-%dT%H:%M:%S')
-    else:
-        def convert(ddatetime):
-            return datetime.datetime.utcfromtimestamp(float(ddatetime))
 
-    start_time = convert(start_time)
-    end_time = convert(end_time)
-    event = Event(title=title, description=description, start=start_time, end=end_time)
-    user = User.objects.get(username=username)
-    calendar = Calendar.objects.get(slug=username)
-    event.creator = user
-    event.calendar = calendar
-    event.save()
-        # return HttpResponseRedirect(event.get_absolute_url())
-
-
-
+    # judge whether the member is in the meeting already
     meeting = Meeting.objects.get(id = meetingid)
-    messageHandler.set_meetinginvitation_accept(member, group, meeting)
-    #increase attendees
+    mers = MeetingEventRelationship.objects.filter(meeting=meeting)
+    result = 'false'
+    for mer in mers:
+        if mer.event.creator.username == username:
+            result = 'true'
+            break
 
-    #bai! add meeting event relationship
-    mer = MeetingEventRelationship(meeting=meeting, event=event)
+    if result == 'false':
+        group = Group.objects.get(name=group_name)
+        #send notification to admin
+        admin = Group.objects.get(name=group_name).admin
+        member = User.objects.get(username = username)
+        message = username+ ' will attend the meeting ' + title + 'of group ' + group_name + '.'
+        status = messageHandler.send_message(member, admin, message)
+        if status == 200:
+            result = 'true'
+        else:
+            retult = 'false'
+        if '-' in start_time:
+            def convert(ddatetime):
+                if ddatetime:
+                    ddatetime = ddatetime.split(' ')[0]
+                    # print(ddatetime)\
+                    ddatetime = ddatetime.split('+')[0]
+                    print(ddatetime)
+                    return datetime.datetime.strptime(ddatetime, '%Y-%m-%dT%H:%M:%S')
+        else:
+            def convert(ddatetime):
+                return datetime.datetime.utcfromtimestamp(float(ddatetime))
 
-    mer.save()
+        #store an event of that user
+        ##add event
+        start_time = convert(start_time)
+        end_time = convert(end_time)
+        event = Event(title=title, description=description, start=start_time, end=end_time)
+        user = User.objects.get(username=username)
+        calendar = Calendar.objects.get(slug=username)
+        event.creator = user
+        event.calendar = calendar
+        event.save()
+
+        # accept the invitation
+        messageHandler.set_meetinginvitation_accept(member, group, meeting)
+        #increase attendees
+
+        # add meeting event relationship
+        mer = MeetingEventRelationship(meeting=meeting, event=event)
+        mer.save()
     res = {'valid': result}
     res = json.dumps(res)
     mimetype = 'application/json'
