@@ -24,6 +24,6 @@
   </table>
   <br>
   <input type="submit" value="{% trans "Save" %}">
-  <button onclick="window.location.href='/calendar'">cancel</button>
+  <button onclick="location.href='/schedule/fullcalendar/{{user.username}}'" type="button">cancel</button>
 </form>
 {% endblock %}

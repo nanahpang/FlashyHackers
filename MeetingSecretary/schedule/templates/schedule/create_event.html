@@ -22,7 +22,7 @@
     {{ form.as_table }}
   </table>
   <br>
-  <input type="submit" value="{% trans "Save" %}">
-  <button onclick="window.location.href='/calendar'">cancel</button>
+  <input class="btn btn-default" type="submit" value="{% trans "Save" %}">
+  <a href="/schedule/fullcalendar/{{user.username}}" class="btn btn-default">Cancel</a>
 </form>
 {% endblock %}

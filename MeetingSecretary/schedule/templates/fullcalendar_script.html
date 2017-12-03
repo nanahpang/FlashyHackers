@@ -30,7 +30,7 @@ $(document).ready(function() {
     function setModalProperties(type, event){
         if(type == 'edit'){
             var tYPE = '{% trans "Edit" %}';
-            var all_url = "{% url 'edit_event' calendar_slug 12345 %}".replace(/12345/, event.event_id);
+            var all_url = "{% url 'edit_event' calendar_slug 12345 %}".replace(12345, event.event_id);
             if (event.existed){
                 var this_url = "{% url 'edit_occurrence' 12345 6789 %}".replace(/12345/, event.event_id).replace(/6789/, event.id);
             }
