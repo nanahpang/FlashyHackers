@@ -1,10 +1,12 @@
 import pytz
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.forms import UserCreationForm
+
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
 from django.contrib import messages
 # Create your views here.
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, HttpResponseNotFound
 from MS.forms import SignUpForm, CreatePartialGroupForm
 from MS.models import Group, Membership, Meeting
 try:
@@ -16,7 +18,27 @@ import datetime
 from django.conf import settings
 from django.db.models import Q
 from django.http import (
-    HttpResponseBadRequest, HttpResponseRedirect, JsonResponse,
+    Http404, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse,
+)
+from django.utils import timezone
+from django.utils.http import is_safe_url
+from django.utils.six.moves.urllib.parse import quote
+from django.views.decorators.http import require_POST
+from django.views.generic.base import TemplateResponseMixin
+from django.views.generic.detail import DetailView
+from django.views.generic.edit import (
+    CreateView, DeleteView, ModelFormMixin, ProcessFormView, UpdateView,
+)
+
+from schedule.models import Calendar, Event, Occurrence
+from schedule.periods import weekday_names
+from schedule.settings import (
+    CHECK_EVENT_PERM_FUNC, CHECK_OCCURRENCE_PERM_FUNC, EVENT_NAME_PLACEHOLDER,
+    GET_EVENTS_FUNC, OCCURRENCE_CANCEL_REDIRECT, USE_FULLCALENDAR,
+)
+from schedule.utils import (
+    check_calendar_permissions, check_event_permissions,
+    check_occurrence_permissions, coerce_date_dict,
 )
 from schedule.models import Calendar, Occurrence
 try:
@@ -143,7 +165,8 @@ def find_all_members(group, keepAdmin):
             if item.member != admin:
                 result.append(item.member)
         return result
-        
+
+
 
 def showgroup(request):
     """
@@ -154,6 +177,7 @@ def showgroup(request):
     data = Membership.objects.filter(group=group_name)
     admin = Group.objects.get(name=group_name).admin.username
 
+
     results = []
     for item in data:
         data_json = item.group
@@ -163,6 +187,26 @@ def showgroup(request):
     res = json.dumps(res)
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
+
+def showonegroupfunc(request, group_name):
+    if group_name == '':
+        print('empty')
+        return HttpResponseNotFound('<h1>No Page Here</h1>')
+    group = Group.objects.filter(name=group_name)
+    if len(group) == 0:
+        print('noneexist')
+        return HttpResponseNotFound('<h1>No Page Here</h1>')
+    print(group[0].name)
+    print(group[0].admin.username)
+    print(group[0].admin)
+    print(request.user)
+    print(request.user.username)
+    if group[0].admin != request.user:
+        return render(request, 'MS/groups.html', {'is_admin': 0})
+    return render(request, 'MS/groups.html', {'is_admin': 1})
+
+
+
 
 def deletegroup(request):
     """
@@ -240,21 +284,33 @@ def accept(request):
     """
     group_name = request.POST.get('group_name')
     username = request.POST.get('username')
+<<<<<<< HEAD
     member = User.objects.get(username=username)
     group = Group.objects.get(name=group_name)
+=======
+    member = User.objects.get(username = username)
+    group = Group.objects.get(name = group_name)
+>>>>>>> refs/remotes/origin/master
 
     #let this new member join group
     p = Membership(group=group, member=member)
     p.save()
     result = 'true'
-    
+
     #send notification to admin
     admin = Group.objects.get(name=group_name).admin
     message = username+ ' has accepted your invitation of joining group '+ group_name
+<<<<<<< HEAD
     status = msgHandler.send_message(member, admin, message)
 
     #modify all other invitations related to this event 'accepted'
     msgHandler.set_invitation_accept(member, group)
+=======
+    status = messageHandler.send_message(member, admin, message)
+
+    #modify all other invitations related to this event 'accepted'
+    messageHandler.set_invitation_accept(member, group)
+>>>>>>> refs/remotes/origin/master
 
     #return result to ajax
     res = {'valid': result}
@@ -310,7 +366,27 @@ def accept_meeting(request):
         retult = 'false'
     #store an event of that user
     ##add event
+    if '-' in start_time:
+        def convert(ddatetime):
+            if ddatetime:
+                ddatetime = ddatetime.split(' ')[0]
+                # print(ddatetime)\
+                ddatetime = ddatetime.split('+')[0]
+                print(ddatetime)
+                return datetime.datetime.strptime(ddatetime, '%Y-%m-%dT%H:%M:%S')
+    else:
+        def convert(ddatetime):
+            return datetime.datetime.utcfromtimestamp(float(ddatetime))
 
+    start_time = convert(start_time)
+    end_time = convert(end_time)
+    event= Event(title = title, description = description, start= start_time, end = end_time)
+    user = User.objects.get(username = username)
+    calendar = Calendar.objects.get(slug = username)
+    event.creator = user
+    event.calendar = calendar
+    event.save()
+        # return HttpResponseRedirect(event.get_absolute_url())
 
 
 
@@ -321,6 +397,7 @@ def accept_meeting(request):
     res = json.dumps(res)
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
+
 def reject_group(request):
     """
     :param request: posting request that rejects the invitation
@@ -328,13 +405,23 @@ def reject_group(request):
     """
     group_name = request.POST.get('group_name')
     username = request.POST.get('username')
+<<<<<<< HEAD
     member = User.objects.get(username=username)
     group = Group.objects.get(name=group_name)
      
+=======
+    member = User.objects.get(username = username)
+    group = Group.objects.get(name = group_name)
+
+>>>>>>> refs/remotes/origin/master
     #send notification to admin
     admin = Group.objects.get(name=group_name).admin
     message = username+ ' has rejected your invitation of joining group '+ group_name
+<<<<<<< HEAD
     status = msgHandler.send_message(member, admin, message)
+=======
+    status = messageHandler.send_message(member, admin, message)
+>>>>>>> refs/remotes/origin/master
 
     #modify all other invitations related to this event 'accepted'
     msgHandler.set_invitation_reject(member, group)
@@ -346,7 +433,6 @@ def reject_group(request):
     return HttpResponse(res, mimetype)
 
 #for messages
-
 def sendgroupinvitation(from_user, to_user, group):
     """
     :param from_user: the user that sends the invitation
@@ -439,6 +525,7 @@ class Interval:
       def __init__(self, s=0, e=0):
           self.start = s
           self.end = e
+
 def find_time(request):
     """
     :param request:  request to find a common time for the group
@@ -514,7 +601,7 @@ def find_time(request):
                 event_end = event_end.astimezone(current_tz)
             interval= Interval(event_start,event_end)
             intervals.append(interval)
-    
+
     intervals.sort(key = lambda x:x.start)
     length=len(intervals)
     res=[]
@@ -538,8 +625,8 @@ def find_time(request):
         result.append(temp)
     length_r = len(result)
     response_data=[]
-    
-    
+
+
     for i in range(length_r+1):
         if i==0:
             if start >= res[i].start:
@@ -580,7 +667,7 @@ def add_meeting(request):
 
     ##send invitation to all member
     ###find all member
-    memberlist = find_all_members(group, False)
+    memberlist = find_all_members(group, True)
     for member in memberlist:
         status = sendmeetinginvitation(admin, member, group, p)
         if status == True:
@@ -589,6 +676,23 @@ def add_meeting(request):
             result = 'false'
     data = {'valid': result}
     data = json.dumps(data)
+    mimetype = 'application/json'
+    return HttpResponse(data, mimetype)
+
+def show_meetings(request):
+    group_name = request.POST.get('group_name')
+    group = Group.objects.get(name = group_name)
+    meeting_list = Meeting.objects.all().filter(group = group)
+    result = []
+    for item in meeting_list:
+        res = {
+            'title' : item.title,
+            'description' : item.description,
+            'start_time' : item.start_time.isoformat(),
+            'end_time' : item.end_time.isoformat()
+        }
+        result.append(res)
+    data = json.dumps(result)
     mimetype = 'application/json'
     return HttpResponse(data, mimetype)
 
@@ -609,7 +713,7 @@ def view_meetinginvitation(request):
                 'start_time': item.meeting.start_time.isoformat(),
                 'end_time': item.meeting.end_time.isoformat(),
                 'description': item.meeting.description,
-            },    
+            },
             'sent_at' : item.sent_at.isoformat()
         }
         invitations.append(invitation)

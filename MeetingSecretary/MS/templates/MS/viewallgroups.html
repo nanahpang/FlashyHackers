@@ -25,19 +25,20 @@
     <div class="col-lg-6">
 
         <h3>As Member</h3>
-        <p id='member_groups'></p>
+        <ol id='member_groups'></ol>
     </div>
 </div>
 
 
 <script>
-    function opennew(groupname){		
-		  window.location = '/groups/' + groupname;
-	  }
-    function groupcalendar(groupname){
-      window.location = '/calendar/' + groupname;
+    function opennew(groupname) {		
+	    window.location = '/groups/' + groupname;
+	}
+
+    function groupcalendar(groupname) {
+        window.location = '/calendar/' + groupname;
     }
-  </script>
+</script>
 
 <script>
 
@@ -52,16 +53,16 @@
         var admin_count = data['admin'].length;
         var admin = data['admin'];
         for (var i = 0; i < admin_count; ++i) {
-          $("ol").append("<li>" + admin[i]+ "</li>");
-          $("ol").append("<button type='button'" + "onclick = opennew('" + admin[i] + "')" + ">view</button>"); 
-          $("ol").append("<button type='button'" + "onclick = groupcalendar('" + admin[i] + "')" + ">view group calendar</button>");       
+          $("#admin").append("<li>" + admin[i]+ "</li>");
+          $("#admin").append("<button type='button'" + " class='button-right' onclick = opennew('" + admin[i] + "')" + ">view</button>"); 
+          $("#admin").append("<button type='button'" + "onclick = groupcalendar('" + admin[i] + "')" + ">view group calendar</button>");       
         }
         var member_count = data['member'].length;
 
         var member = data['member'];
         for (var i = 0; i < member_count; ++i) {
-          $("#member_groups").append("<li>" + member[i]+ "<td>" + 
-          "<button type='button'" + "onclick = opennew('" + member[i] + "')" + ">view</button></td></li>");      
+          $("#member_groups").append("<li>" + member[i]+ "</li>");
+          $("#member_groups").append("<button type='button'" + "onclick = opennew('" + member[i] + "')" + ">view</button></td></li>");      
         }
       }
     });
