@@ -38,9 +38,9 @@
       <div><a href="#menu-toggle" class="btn btn-secondary" id="menu-toggle">Menu</a></div>
 
     {% else %}
-      <a href="{% url 'login' %}">login</a>
-      <a href="{% url 'signup' %}">signup</a>
+    <a href="{% url 'home' %}"class = "btn btn-secondary" role="button">Back to Home</a>
     {% endif %}
+    
   </header>
     <div id="wrapper">
         <div id="sidebar-wrapper">
@@ -88,7 +88,7 @@
 
     <footer class="bg-faded text-center py-3">
       <div class="container">
-          <a href="{% url 'logout' %}">logout</a><br>
+          <a href="{% url 'logout' %}" value="Log Out">Log Out</a><br>
         <p class="m-0">Copyright &copy; FlashyHackers 2017</p>
       </div>
         {% block footer%}

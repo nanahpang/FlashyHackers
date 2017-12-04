@@ -99,7 +99,8 @@ def viewadmingroups(request):
         admin_results.append(data_json)
     for item in member_entries:
         data_json = item.group.name
-        member_results.append(data_json)
+        if data_json not in admin_results:
+            member_results.append(data_json)
     res = {'admin': admin_results, 'member':member_results}
     res = json.dumps(res)
     mimetype = 'application/json'
@@ -119,8 +120,6 @@ def find_all_members(group, keepadmin):
             result.append(item.member)
     return result
 
-
-
 def showgroup(request):
     group_name = request.POST.get('group_name')
     data = Membership.objects.filter(group=group_name)
@@ -136,7 +135,6 @@ def showgroup(request):
     return HttpResponse(res, mimetype)
 
 def showonegroupfunc(request, group_name):
-    print("come here")
     if group_name == '':
         return HttpResponseNotFound('<h1>No Page Here</h1>')
     group = Group.objects.filter(name=group_name)

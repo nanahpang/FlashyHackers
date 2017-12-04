@@ -11,7 +11,9 @@
         <strong>Home Page</strong>
       </h2>
         <hr class="divider" align="left">
-        <div class="my-0">Hi {{user.first_name}}. Welcome! Today is: <p id="date"></p></div>
+        <div class="my-0">Hi {{user.first_name}}. Welcome! 
+          <p id ="date"></p>
+        </div>
 
         <script>
         var weekday = new Array(7);
@@ -27,16 +29,32 @@
         y = n.getFullYear();
         m = n.getMonth() + 1;
         d = n.getDate();
+        var month_name = new Array(12);
+        month_name[0] = "January";
+        month_name[1] = "Febuary";
+        month_name[2] = "March";
+        month_name[3] = "April";
+
+        month_name[4] = "May";
+        month_name[5] = "June";
+        month_name[6] = "Jul";
+        month_name[7] = "August";
+        month_name[8] = "September";
+        month_name[9] = "October";
+        month_name[10] = "November";
+        month_name[11] = "December";
+
         var day = weekday[n.getDay()];
-            document.getElementById("date").innerHTML = m + "/" + d + "/" + y + " " + day;
+        var month = month_name[n.getMonth()];
+        document.getElementById("date").innerHTML = "Today is " + month + " " + d + ", " + y + " " + day + ".";
         </script>
     </div>
     <div class="col-lg-4">
   <h2>Personal Profile</h2>
-		name:       {{user.username}} <br>
-		first name: {{user.first_name}} <br>
-	    last name:  {{user.last_name}} <br>
-	    email:      {{user.email}} <br> 
+		Username:       {{user.username}} <br>
+		First name: {{user.first_name}} <br>
+	    Last name:  {{user.last_name}} <br>
+	    Email:      {{user.email}} <br> 
     {% if from_change == "success" %}
 		<br>
 	    <div id="change">Change success!</div>
@@ -46,7 +64,11 @@
     {% endif %}
 </div>
   {% else %}
-        You are forbidden to enter this site, please goto /login page to login first
+        <p>Please to log in or sign up an account to enter this site. </p>
+        <p>If you have an account, you can <mark><a href="{% url 'login' %}">log in</a></mark>here.</p>
+        <p>Or you can <mark><a href="{% url 'signup' %}">sign up</a></mark> an account to own your Meeting Secretary!</p>
+        
+        
   {% endif %}
 
 {% endblock %}
