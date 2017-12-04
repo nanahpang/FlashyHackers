@@ -3,7 +3,8 @@ import codecs
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User
-from MS.models import Group, Membership, Meeting, GroupInvitation, MeetingEventRelationship, MeetingInvitation, Message
+from MS.models import Group, Membership, Meeting
+from MS.models import GroupInvitation, MeetingEventRelationship, MeetingInvitation, Message
 from MS import views
 from MS.forms import SignUpForm, CreatePartialGroupForm
 from django.core.urlresolvers import reverse
@@ -17,15 +18,24 @@ class PersonalProfileTest(TestCase):
 
     def setUp(self):
         self.client = Client()
-        self.User1 = User.objects.create_user(username="User1", first_name="first1", last_name="last1", email="useremail1@server.com", password="password1")
-        self.User2 = User.objects.create_user(username="User2", first_name="first2", last_name="last2", email="useremail2@server.com", password="password2")
+        self.User1 = User.objects.create_user(username="User1", first_name="first1"
+                                              , last_name="last1", email="useremail1@server.com"
+                                              , password="password1")
+        self.User2 = User.objects.create_user(username="User2", first_name="first2"
+                                              , last_name="last2", email="useremail2@server.com"
+                                              , password="password2")
 
     def test_signup(self):
-        post1 = {"username": "TestUser1", "first_name": "FN1", "last_name": "LN1", "email": "email1@server.com", "password1": "passwordtest", "password2": "passwordtest"}
+        post1 = {"username": "TestUser1", "first_name": "FN1", "last_name": "LN1",
+                 "email": "email1@server.com", "password1": "passwordtest",
+                 "password2": "passwordtest"}
         # two passwords are different
-        post2 = {"username": "TestUser2", "first_name": "FN2", "last_name": "LN2", "email": "email2@server.com", "password1": "passwordtest", "password2": "passwordtest2"}
+        post2 = {"username": "TestUser2", "first_name": "FN2", "last_name": "LN2",
+                 "email": "email2@server.com", "password1": "passwordtest",
+                 "password2": "passwordtest2"}
         # required information has to be filled
-        post3 = {"username": "TestUser3", "first_name": "FN3", "last_name": "LN3", "email": "", "password1": "passwordtest", "password2": "passwordtest"}
+        post3 = {"username": "TestUser3", "first_name": "FN3", "last_name": "LN3",
+                 "email": "", "password1": "passwordtest", "password2": "passwordtest"}
         response = self.client.post(reverse("signup"), post1)
         self.assertEqual(response.status_code, 302)
         response = self.client.post(reverse("signup"), post2)
@@ -111,25 +121,33 @@ class GroupAndMeetingTest(TestCase):
         self.client = Client()
 
         # User1: Not in any group or meeting
-        self.User1 = User.objects.create_user(username="User1", first_name="first1", last_name="last1", email="useremail1@server.com", password="password1")
+        self.User1 = User.objects.create_user(username="User1", first_name="first1",
+                                              last_name="last1", email="useremail1@server.com",
+                                              password="password1")
         calendar1 = Calendar(name="User1"+"_cal", slug="User1")
         calendar1.save()
         calendar1.create_relation(self.User1)
 
         # User2: admin of Group1, Meeting1
-        self.User2 = User.objects.create_user(username="User2", first_name="first2", last_name="last2", email="useremail2@server.com", password="password2")
+        self.User2 = User.objects.create_user(username="User2", first_name="first2",
+                                              last_name="last2", email="useremail2@server.com",
+                                              password="password2")
         calendar2 = Calendar(name="User2"+"_cal", slug="User2")
         calendar2.save()
         calendar2.create_relation(self.User2)
 
         # User3, Not in any group or meeting
-        self.User3 = User.objects.create_user(username="User3", first_name="first3", last_name="last3", email="useremail3@server.com", password="password3")
+        self.User3 = User.objects.create_user(username="User3", first_name="first3",
+                                              last_name="last3", email="useremail3@server.com",
+                                              password="password3")
         calendar3 = Calendar(name="User3"+"_cal", slug="User3")
         calendar3.save()
         calendar3.create_relation(self.User3)
 
         # User4, In Group1, Meeting1
-        self.User4 = User.objects.create_user(username="User4", first_name="first4",last_name="last3", email="useremail3@server.com", password="password3")
+        self.User4 = User.objects.create_user(username="User4", first_name="first4",
+                                              last_name="last3", email="useremail3@server.com",
+                                              password="password3")
         calendar4 = Calendar(name="User4"+"_cal", slug="User4")
         calendar4.save()
         calendar4.create_relation(self.User4)
@@ -138,13 +156,25 @@ class GroupAndMeetingTest(TestCase):
         self.Membership12 = Membership.objects.create(group=self.Group1, member=self.User2)
         self.Membership14 = Membership.objects.create(group=self.Group1, member=self.User4)
         self.Meeting1 = Meeting.objects.create(group=self.Group1, title="testtitle",
-                description="testdescription", start_time=self.convert('2017-12-04T00:00:00'), end_time=self.convert('2017-12-05T00:00:00'))
-        self.Event2 = Event.objects.create(start=self.convert('2017-12-04T00:00:00'), end=self.convert('2017-12-05T00:00:00'), title=self.Meeting1.title, description=self.Meeting1.description, creator=self.User2,calendar_id=calendar2.id)
+                                               description="testdescription",
+                                               start_time=self.convert('2017-12-04T00:00:00'),
+                                               end_time=self.convert('2017-12-05T00:00:00'))
+        self.Event2 = Event.objects.create(start=self.convert('2017-12-04T00:00:00'),
+                                           end=self.convert('2017-12-05T00:00:00'),
+                                           title=self.Meeting1.title,
+                                           description=self.Meeting1.description,
+                                           creator=self.User2, calendar_id=calendar2.id)
 
-        self.Event4 = Event.objects.create(start=self.convert('2017-12-04T00:00:00'), end=self.convert('2017-12-05T00:00:00'), title=self.Meeting1.title, description=self.Meeting1.description, creator=self.User4, calendar_id=calendar4.id)
+        self.Event4 = Event.objects.create(start=self.convert('2017-12-04T00:00:00'),
+                                           end=self.convert('2017-12-05T00:00:00'),
+                                           title=self.Meeting1.title,
+                                           description=self.Meeting1.description,
+                                           creator=self.User4, calendar_id=calendar4.id)
 
-        self.MeetingEventRelationship12 = MeetingEventRelationship.objects.create(meeting=self.Meeting1, event=self.Event2)
-        self.MeetingEventRelationship14 = MeetingEventRelationship.objects.create(meeting=self.Meeting1, event=self.Event4)
+        self.MeetingEventRelationship12 = MeetingEventRelationship.objects.create    \
+                                          (meeting=self.Meeting1, event=self.Event2)
+        self.MeetingEventRelationship14 = MeetingEventRelationship.objects.create    \
+                                          (meeting=self.Meeting1, event=self.Event4)
 
     def test_send_message(self):
         login = self.client.login(username="User2", password="password2")
@@ -212,9 +242,12 @@ class GroupAndMeetingTest(TestCase):
 
     def test_add_member_and_accept_or_reject_group_invitation(self):
         login = self.client.login(username="User2", password="password2")
-        post1 = {"group_name": "Group1", "memberid": "User1", "group_admin": "User2", "messages": "hello"}
-        post2 = {"group_name": "Group1", "memberid": "User10", "group_admin": "User2", "messages": "hello"}
-        post3 = {"group_name": "Group1", "memberid": "User3", "group_admin": "User1", "messages": "hello"}
+        post1 = {"group_name": "Group1", "memberid": "User1",
+                 "group_admin": "User2", "messages": "hello"}
+        post2 = {"group_name": "Group1", "memberid": "User10",
+                 "group_admin": "User2", "messages": "hello"}
+        post3 = {"group_name": "Group1", "memberid": "User3",
+                 "group_admin": "User1", "messages": "hello"}
         post4 = {"group_name": "Group1", "username": "User1"}
         response = self.client.post(reverse("addnewmember"), post1)
         data = json.loads(response.content.decode('utf-8'))
@@ -268,8 +301,10 @@ class GroupAndMeetingTest(TestCase):
     def test_delete_member_from_group(self):
         login = self.client.login(username="User2", password="password2")
         Membership.objects.create(group=self.Group1, member=self.User1)
-        post1 = {"group_name": "Group1", "memberid": "User4", "operationuser": "User2"} # delete member in the group(attend a meeting)
-        post2 = {"group_name": "Group1", "memberid": "User2", "operationuser": "User2"} # admin should not be able to delete himself/herself
+        # delete member in the group(attend a meeting)
+        post1 = {"group_name": "Group1", "memberid": "User4", "operationuser": "User2"}
+        # admin should not be able to delete himself/herself
+        post2 = {"group_name": "Group1", "memberid": "User2", "operationuser": "User2"}
         post3 = {"group_name": "Group1", "memberid": "User3", "operationuser": "User1"}
         post4 = {"username": "User4"}
         response = self.client.post(reverse("deletemember"), post1)
@@ -293,9 +328,9 @@ class GroupAndMeetingTest(TestCase):
     def test_create_and_view_meeting_and_invitation(self):
         login = self.client.login(username="User2", password="password2")
         post1 = {"group_name": "Group1", "title": "title2", "description": "description2",
-                "start_time": "2017-08-15", "end_time": "2017-08-16"}
+                 "start_time": "2017-08-15", "end_time": "2017-08-16"}
         post2 = {"group_name": "Group1", "title": "title2", "description": "description2",
-                "end_time": "2017-08-16"}
+                 "end_time": "2017-08-16"}
         post3 = {"group_name": "Group1"}
         post4 = {"username": "User4"}
         # notice! haven't tested time empty
@@ -322,7 +357,7 @@ class GroupAndMeetingTest(TestCase):
     def test_handle_meeting_invitation(self):
         login = self.client.login(username="User2", password="password2")
         post1 = {"group_name": "Group1", "title": "title2", "description": "description2",
-                "start_time": "2017-08-15T00:00:00", "end_time": "2017-08-16T00:00:00"}
+                 "start_time": "2017-08-15T00:00:00", "end_time": "2017-08-16T00:00:00"}
         post2 = {"username": "User4"}
         meeting_info = []
         meeting_info.append("title2")
@@ -375,9 +410,9 @@ class GroupAndMeetingTest(TestCase):
         login = self.client.login(username="User2", password="password2")
         meetingid = self.Meeting1.id
         post1 = {"id": meetingid, "group_name": "Group1", 'changed_title': "changed_t",
-                "changed_description": "changed_d",
-                "changed_start_time": "2017-08-21T00:00:00", "changed_end_time":
-                "2017-08-21T01:00:00"}
+                 "changed_description": "changed_d",
+                 "changed_start_time": "2017-08-21T00:00:00", "changed_end_time":
+                 "2017-08-21T01:00:00"}
         post2 = {"username": "User4"}
         response = self.client.post(reverse("change_meeting"), post1)
         meetings = Meeting.objects.all()

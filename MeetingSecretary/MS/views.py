@@ -1,54 +1,25 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.forms import UserCreationForm
+import datetime
+import pytz
+from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
 from django.contrib import messages
-
-# Create your views here.
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, HttpResponseNotFound
+from django.conf import settings
+from django.utils import timezone
+from django.http import HttpResponse, JsonResponse, HttpResponseNotFound
+from django.http import HttpResponseBadRequest
+from django.db.models import Q
 from MS.forms import SignUpForm, CreatePartialGroupForm
 from MS.models import Group, Membership, Meeting, MeetingEventRelationship
-from django.core import serializers
-
-try: import simplejson as json
-except ImportError: import json
-from schedule.models.calendars import CalendarManager, Calendar
-from django.utils import timezone
+from schedule.models import Event, Occurrence
+from schedule.models.calendars import Calendar
 from .messageHandler import MessageHandler
+
+try:
+    import simplejson as json
+except ImportError:
+    import json
 messageHandler = MessageHandler()
-# Copy from schedule
-import datetime
-import time
-
-import dateutil.parser
-import pytz
-from django.conf import settings
-from django.core.urlresolvers import reverse
-from django.db.models import F, Q
-from django.http import (
-    Http404, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse,
-)
-from django.shortcuts import get_object_or_404
-from django.utils import timezone
-from django.utils.http import is_safe_url
-from django.utils.six.moves.urllib.parse import quote
-from django.views.decorators.http import require_POST
-from django.views.generic.base import TemplateResponseMixin
-from django.views.generic.detail import DetailView
-from django.views.generic.edit import (
-    CreateView, DeleteView, ModelFormMixin, ProcessFormView, UpdateView,
-)
-
-from schedule.models import Calendar, Event, Occurrence
-from schedule.periods import weekday_names
-from schedule.settings import (
-    CHECK_EVENT_PERM_FUNC, CHECK_OCCURRENCE_PERM_FUNC, EVENT_NAME_PLACEHOLDER,
-    GET_EVENTS_FUNC, OCCURRENCE_CANCEL_REDIRECT, USE_FULLCALENDAR,
-)
-from schedule.utils import (
-    check_calendar_permissions, check_event_permissions,
-    check_occurrence_permissions, coerce_date_dict,
-)
 
 def signup(request):
     """
@@ -99,10 +70,6 @@ def change(request, type):
 #group management part
 
 def creategroup(request):
-    """
-    :param request: request to create a group
-    :return: render a html with group creation information
-    """
     if request.method == 'POST':
         form = CreatePartialGroupForm(request.POST)
         if form.is_valid():
@@ -112,20 +79,15 @@ def creategroup(request):
             group.save()
             group = Group.objects.get(name=group.name)
             member = User.objects.get(username=request.user.username)
-            p = Membership(group=group, member=member)
-            p.save()
+            membership = Membership(group=group, member=member)
+            membership.save()
             messages.success(request, '%s is created by %s' %(group.name, group.admin.username))
             return redirect('home')
     else:
         form = CreatePartialGroupForm()
-    #if request.method == 'GET':
     return render(request, 'MS/creategroup.html', {'form': form})
 
 def viewadmingroups(request):
-    """
-    :param request: request to view groups as admin
-    :return: HTTP response to the groups view
-    """
     username = request.POST.get('username')
     user = User.objects.get(username=username)
     admin_entries = Group.objects.filter(admin=user)
@@ -143,11 +105,10 @@ def viewadmingroups(request):
     mimetype = 'application/json'
     return HttpResponse(res, mimetype)
 
-def find_all_members(group, keepAdmin):
-    ##include admin
+def find_all_members(group, keepadmin):
     data = Membership.objects.filter(group=group)
     result = []
-    if keepAdmin == True:
+    if keepadmin is True:
         for item in data:
             result.append(item.member)
         return result
@@ -161,17 +122,12 @@ def find_all_members(group, keepAdmin):
 
 
 def showgroup(request):
-    """
-    :param request: request to show the groups that the user is in
-    :return: HTTP response for all his groups
-    """
     group_name = request.POST.get('group_name')
     data = Membership.objects.filter(group=group_name)
     admin = Group.objects.get(name=group_name).admin.username
 
     results = []
     for item in data:
-        #data_json = item.group
         data_json = item.member.username
         results.append(data_json)
     res = {'admin' : admin, 'member' : results}
@@ -200,21 +156,21 @@ def deletegroup(request):
     """
     group_name = request.POST.get('groupid')
     operationuser = request.POST.get('operationuser')
-    q = Group.objects.filter(name=group_name)
-    if len(q) != 0:
-        if q[0].admin.username == operationuser:
+    groups = Group.objects.filter(name=group_name)
+    if len(groups) != 0:
+        if groups[0].admin.username == operationuser:
             admin = User.objects.get(username=operationuser)
             delete_notification = "The group " + group_name + " is removed\n"
-            memberships = Membership.objects.filter(group=q[0])
+            memberships = Membership.objects.filter(group=groups[0])
             # send notifications
             for membership in memberships:
                 member = membership.member
                 if member == admin:
                     continue
-                status = messageHandler.send_message(admin, member, delete_notification)
+                messageHandler.send_message(admin, member, delete_notification)
                 _deletememberfromgroup(group_name, member)
-            _deletemeetings(q[0])
-            q.delete()
+            _deletemeetings(groups[0])
+            groups[0].delete()
             result = 'true'
         else:
             result = 'false-noright'
@@ -245,7 +201,7 @@ def addnewmember(request):
             result = 'false-self'
         else:
             status = sendgroupinvitation(from_user, member[0], group)
-            if status == True:
+            if status is True:
                 result = 'true'
             else:
                 result = 'false'
@@ -257,10 +213,6 @@ def addnewmember(request):
     return HttpResponse(res, mimetype)
 
 def deletemember(request):
-    """
-    :param request: request for deleting a group member
-    :return: HTTP response for deletion
-    """
     group_name = request.POST.get('group_name')
     member_id = request.POST.get('memberid')
     operationuser = request.POST.get('operationuser')
@@ -282,24 +234,24 @@ def deletemember(request):
 
 
 def _deletememberfromgroup(group_name, member):
-    p = Membership.objects.filter(group=group_name, member=member)
-    if len(p) == 0:
+    membership = Membership.objects.filter(group=group_name, member=member)
+    if len(membership) == 0:
         result = 'false-nomember'
     else:
         meetings = Meeting.objects.filter(group=group_name)
         group = Group.objects.get(name=group_name)
         message = "You are removed from group " + group_name + '\n'
-        status = messageHandler.send_message(group.admin, member, message)
+        messageHandler.send_message(group.admin, member, message)
         for meeting in meetings:
             _deletememberfrommeeting(meeting, member)
-        p[0].delete()
+        membership[0].delete()
         result = 'true'
     return result
 
 def _deletememberfrommeeting(meeting, member):
     events = Event.objects.filter(creator=member)
     message = "You are removed from meeting " + meeting.title + '\n'
-    status = messageHandler.send_message(meeting.group.admin, member, message)
+    messageHandler.send_message(meeting.group.admin, member, message)
     for event in events:
         mers = MeetingEventRelationship.objects.filter(meeting=meeting, event=event)
         for mer in mers:
@@ -318,8 +270,8 @@ def accept(request):
     #let this new member join group
     membership = Membership.objects.filter(group=group, member=member)
     if len(membership) == 0:
-        p = Membership(group=group, member=member)
-        p.save()
+        membership = Membership(group=group, member=member)
+        membership.save()
         result = 'true'
     else:
         result = 'false'
@@ -327,7 +279,7 @@ def accept(request):
     #send notification to admin
     admin = Group.objects.get(name=group_name).admin
     message = username+ ' has accepted your invitation of joining group '+ group_name
-    status = messageHandler.send_message(member, admin, message)
+    messageHandler.send_message(member, admin, message)
 
     #modify all other invitations related to this event 'accepted'
     messageHandler.set_invitation_accept(member, group)
@@ -347,7 +299,7 @@ def reject_group(request):
     #send notification to admin
     admin = Group.objects.get(name=group_name).admin
     message = username+ ' has rejected your invitation of joining group '+ group_name
-    status = messageHandler.send_message(member, admin, message)
+    messageHandler.send_message(member, admin, message)
 
     #modify all other invitations related to this event 'accepted'
     messageHandler.set_invitation_reject(member, group)
@@ -370,9 +322,9 @@ def add_meeting(request):
     admin = group.admin
     #find time convertor
     ##save this meeting into meeting table
-    p = Meeting(group=group, title=title,
-                description=description, start_time=start_time, end_time=end_time)
-    p.save()
+    meeting = Meeting(group=group, title=title,
+                      description=description, start_time=start_time, end_time=end_time)
+    meeting.save()
     #bai! save event for the admin
     event = Event(title=title, description=description, start=start_time, end=end_time)
     event.creator = admin
@@ -380,7 +332,7 @@ def add_meeting(request):
     event.calendar = calendar
     event.save()
     #bai! save meetingeventrelationship for admin
-    mer = MeetingEventRelationship(meeting=p, event=event)
+    mer = MeetingEventRelationship(meeting=meeting, event=event)
     mer.save()
 
     ##send invitation to all member
@@ -390,7 +342,7 @@ def add_meeting(request):
     for member in memberlist:
         if member == admin:
             continue
-        status = sendmeetinginvitation(admin, member, group, p)
+        status = sendmeetinginvitation(admin, member, group, meeting)
         if status == True:
             result = 'true'
         else:
@@ -411,13 +363,10 @@ def show_meetings(request):
         # bai!
         allmeetingrelationship = MeetingEventRelationship.objects.filter(meeting=item)
         meetingmembers = []
-        for re in allmeetingrelationship:
-            event = re.event
+        for mer in allmeetingrelationship:
+            event = mer.event
             user = User.objects.get(username=event.creator.username)
             meetingmembers.append(user.username)
-
-
-
 
         res = {
             'id' : item.id,
@@ -472,7 +421,7 @@ def reject_meeting(request):
     if status == 200:
         result = 'true'
     else:
-        retult = 'false'
+        result = 'false'
     meeting = Meeting.objects.get(id=meetingid)
     messageHandler.set_meetinginvitation_reject(member, group, meeting)
 
@@ -512,7 +461,7 @@ def accept_meeting(request):
         if status == 200:
             result = 'true'
         else:
-            retult = 'false'
+            result = 'false'
         if '-' in start_time:
             def convert(ddatetime):
                 if ddatetime:
@@ -604,7 +553,7 @@ def change_meeting(request):
         if member == admin:
             continue
         status = sendmeetinginvitation(admin, member, group, meeting)
-        if status == False:
+        if status is False:
             result = 'false'
     data = {'valid': result}
     data = json.dumps(data)
@@ -622,18 +571,12 @@ def sendgroupinvitation(from_user, to_user, group):
     :return: the status if the msg has been sent
     """
     status = messageHandler.send_groupinvitation(from_user, to_user, group)
-    if status == 200:
-        result = True
-    else:
-        result = False
+    result = bool(status == 200)
     return result
 
 def sendmeetinginvitation(from_user, to_user, group, meeting):
     status = messageHandler.send_meetinginvitation(from_user, to_user, group, meeting)
-    if status == 200:
-        result = True
-    else:
-        result = False
+    result = bool(status == 200)
     return result
 
 
@@ -681,26 +624,22 @@ def view_groupinvitation(request):
 
 
 #test search available time
-def searchtime(request):
-    """
-    :param request:  request to search a meeting time for the group
-    :return: HTTP
-    """
-    group_name = request.POST.get("group_name")
-    start_time = request.POST.get("start_time")
-    end_time = request.POST.get("end_time")
-    res = []
-    for i in range(2):
-        start = timezone.now().isoformat()
-        end = timezone.now().isoformat()
-        slot = []
-        slot.append(start)
-        slot.append(end)
-        res.append(slot)
-    result = {'slots' : res}
-    result = json.dumps(result)
-    mimetype = 'application/json'
-    return HttpResponse(result, mimetype)
+#def searchtime(request):
+    #group_name = request.POST.get("group_name")
+    #start_time = request.POST.get("start_time")
+    #end_time = request.POST.get("end_time")
+ #   res = []
+    #for i in range(2):
+ #   start = timezone.now().isoformat()
+ #   end = timezone.now().isoformat()
+ #   slot = []
+ #   slot.append(start)
+ #   slot.append(end)
+ #   res.append(slot)
+ #   result = {'slots' : res}
+ #   result = json.dumps(result)
+ #   mimetype = 'application/json'
+ #   return HttpResponse(result, mimetype)
 
 class Interval:
     def __init__(self, s=0, e=0):
@@ -708,10 +647,6 @@ class Interval:
         self.end = e
 
 def find_time(request):
-    """
-    :param request:  request to find a common time for the group
-    :return: HTTP
-    """
     start = request.POST.get('start_time')
     end = request.POST.get('end_time')
     group_name = request.GET.get('group_name')
