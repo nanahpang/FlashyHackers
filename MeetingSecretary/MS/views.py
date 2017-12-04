@@ -158,17 +158,16 @@ def find_all_members(group, keepAdmin):
     ##include admin
     data = Membership.objects.filter(group=group)
     result = []
-    if (keepAdmin == True):
+    if keepAdmin == True:
         for item in data:
             result.append(item.member)
         return result
-    else:
-        result = []
-        admin = Group.objects.get(name=group.name).admin
-        for item in data:
-            if item.member != admin:
-                result.append(item.member)
-        return result
+    result = []
+    admin = Group.objects.get(name=group.name).admin
+    for item in data:
+        if item.member != admin:
+            result.append(item.member)
+    return result
 
 
 
@@ -214,7 +213,7 @@ def deletegroup(request):
     operationuser = request.POST.get('operationuser')
     q = Group.objects.filter(name=group_name)
     if len(q) != 0:
-        if q[0].admin.username == operationuser :
+        if q[0].admin.username == operationuser:
             admin = User.objects.get(username=operationuser)
             delete_notification = "The group " + group_name + " is removed\n"
             memberships = Membership.objects.filter(group=q[0])
@@ -228,7 +227,7 @@ def deletegroup(request):
             _deletemeetings(q[0])
             q.delete()
             result = 'true'
-        else :
+        else:
             result = 'false-noright'
     else:
         result = 'false-nogroup'
@@ -382,7 +381,8 @@ def add_meeting(request):
     admin = group.admin
     #find time convertor
     ##save this meeting into meeting table
-    p = Meeting(group=group, title=title, description=description, start_time=start_time, end_time=end_time)
+    p = Meeting(group=group, title=title,
+                description=description, start_time=start_time, end_time=end_time)
     p.save()
     #bai! save event for the admin
     event = Event(title=title, description=description, start=start_time, end=end_time)
@@ -477,14 +477,14 @@ def reject_meeting(request):
     group = Group.objects.get(name=group_name)
     #send notification to admin
     admin = Group.objects.get(name=group_name).admin
-    member = User.objects.get(username = username)
+    member = User.objects.get(username=username)
     message = username+ ' will not attend the meeting ' + title + 'of group ' + group_name + '.'
     status = messageHandler.send_message(member, admin, message)
     if status == 200:
         result = 'true'
     else:
         retult = 'false'
-    meeting = Meeting.objects.get(id = meetingid)
+    meeting = Meeting.objects.get(id=meetingid)
     messageHandler.set_meetinginvitation_reject(member, group, meeting)
 
     res = {'valid': result}
@@ -503,9 +503,9 @@ def accept_meeting(request):
     start_time = meeting_info[3]
     end_time = meeting_info[4]
     meetingid = meeting_info[5]
-    
+
     # judge whether the member is in the meeting already
-    meeting = Meeting.objects.get(id = meetingid)
+    meeting = Meeting.objects.get(id=meetingid)
     mers = MeetingEventRelationship.objects.filter(meeting=meeting)
     result = 'false'
     for mer in mers:
@@ -517,7 +517,7 @@ def accept_meeting(request):
         group = Group.objects.get(name=group_name)
         #send notification to admin
         admin = Group.objects.get(name=group_name).admin
-        member = User.objects.get(username = username)
+        member = User.objects.get(username=username)
         message = username+ ' will attend the meeting ' + title + 'of group ' + group_name + '.'
         status = messageHandler.send_message(member, admin, message)
         if status == 200:
@@ -584,7 +584,8 @@ def change_meeting(request):
      #   event = mre.event
      #   event.delete()
      #   mre.delete()
-    description = "Notice! Meeting information is changed !! Please decide whether you will attend again!! (original meeting event is deleted automatically)\n"
+    description = "Notice! Meeting information is changed !! Please decide whether  \
+                you will attend again!! (original meeting event is deleted automatically)\n"
 
     _deletemeeting(meeting)
     group_name = request.POST.get('group_name')
@@ -595,10 +596,12 @@ def change_meeting(request):
     start_time = request.POST.get('changed_start_time')
     end_time = request.POST.get('changed_end_time')
 
-    meeting = Meeting(group=group, title=title, description=description, start_time=start_time, end_time=end_time)
+    meeting = Meeting(group=group, title=title, description=description,
+                      start_time=start_time, end_time=end_time)
     meeting.save()
 
-    event = Event(title=meeting.title, description=meeting.description, start=meeting.start_time, end=meeting.end_time)
+    event = Event(title=meeting.title,
+                  description=meeting.description, start=meeting.start_time, end=meeting.end_time)
     event.creator = admin
     calendar = Calendar.objects.get(slug=admin.username)
     event.calendar = calendar
@@ -711,9 +714,9 @@ def searchtime(request):
     return HttpResponse(result, mimetype)
 
 class Interval:
-      def __init__(self, s=0, e=0):
-          self.start = s
-          self.end = e
+    def __init__(self, s=0, e=0):
+        self.start = s
+        self.end = e
 
 def find_time(request):
     """
@@ -734,7 +737,6 @@ def find_time(request):
     if not start or not end:
         raise ValueError('Start and end parameters are required')
     # version 2 of full calendar
-    # TODO: improve this code with date util package
     if '-' in start:
         def convert(ddatetime):
             if ddatetime:
@@ -796,19 +798,19 @@ def find_time(request):
                 # make event start and end dates aware in given timezone
                 event_start = event_start.astimezone(current_tz)
                 event_end = event_end.astimezone(current_tz)
-            interval= Interval(event_start,event_end)
+            interval = Interval(event_start, event_end)
             intervals.append(interval)
 
-    intervals.sort(key = lambda x:x.start)
-    length=len(intervals)
-    res=[]
+    intervals.sort(key=lambda x: x.start)
+    length = len(intervals)
+    res = []
     for i in range(length):
-        if res==[]:
+        if res == []:
             res.append(intervals[i])
         else:
-            size=len(res)
-            if res[size-1].start<=intervals[i].start<=res[size-1].end:
-                res[size-1].end=max(intervals[i].end, res[size-1].end)
+            size = len(res)
+            if res[size-1].start <= intervals[i].start <= res[size-1].end:
+                res[size-1].end = max(intervals[i].end, res[size-1].end)
             else:
                 res.append(intervals[i])
     if len(res) == 0:
@@ -818,7 +820,7 @@ def find_time(request):
 
     result = []
     for item in res:
-        temp = [item.start,item.end]
+        temp = [item.start, item.end]
         result.append(temp)
     length_r = len(result)
     response_data=[]
@@ -919,7 +921,6 @@ def _api_group(start, end, calendar_slug, timezone):
     if not start or not end:
         raise ValueError('Start and end parameters are required')
     # version 2 of full calendar
-    # TODO: improve this code with date util package
     #if '-' in start:
     #    def convert(datetime):
     #        """
