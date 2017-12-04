@@ -15,13 +15,9 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from MS import views
 from django.contrib.auth import views as auth_views
-#from django.views.generic.base import TemplateView
-
 from django.views.generic import TemplateView
-
-from django.conf import settings
+from MS import views
 from schedule.views import CreateEventView
 
 
@@ -46,7 +42,7 @@ urlpatterns = [
         name='viewallgroups'),
     url(r'^ajax/viewadmingroups/$', views.viewadmingroups, name='viewadmingroups'),
     url(r'^ajax/showgroup/', views.showgroup, name='showgroup'),
-    url(r'^groups/(?P<group_name>([0-9a-z]*))/$', views.showonegroupfunc, name='groups'),
+    url(r'^groups/(?P<group_name>([0-9a-zA-Z_]*))/$', views.showonegroupfunc, name='groups'),
     url(r'^ajax/addnewmember/', views.addnewmember, name='addnewmember'),
     url(r'^ajax/deletemember/', views.deletemember, name='deletemember'),
     url(r'^ajax/deletegroup/', views.deletegroup, name='deletegroup'),
@@ -64,7 +60,7 @@ urlpatterns = [
     url(r'^profile/', TemplateView.as_view(template_name='MS/profile_page.html')),
     # Uncomment the next line to enable the admin:
     #for meeting
-    url(r'^ajax/searchtime/', views.searchtime, name='searchtime'),
+    #url(r'^ajax/searchtime/', views.searchtime, name='searchtime'),
     url(r'^ajax/find_time/', views.find_time, name='find_time'),
     url(r'^ajax/addmeeting/', views.add_meeting, name='add_meeting'),
     url(r'^ajax/viewmeetinginvitation/', views.view_meetinginvitation,
