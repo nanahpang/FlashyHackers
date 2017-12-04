@@ -3,8 +3,6 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
 from django.contrib import messages
-# from oauth2client.contrib.django_orm import Storage
-# from MS.models import CredentialsModel
 
 # Create your views here.
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, HttpResponseNotFound
@@ -64,25 +62,16 @@ def signup(request):
         raw_password = form.cleaned_data.get('password1')
         user = authenticate(username=username, password=raw_password)
         login(request, user)
-
         calendar = Calendar(name=username+"_cal", slug=username)
         calendar.save()
         calendar.create_relation(user)
-
-        #print('is valid')
         return redirect('home')
     else:
         form = SignUpForm()
-    #print('first time')
     return render(request, 'MS/signup.html', {'form': form})
 
 
 def change(request, type):
-    """
-    :param request: request to change the information
-    :param type: what kind of information is the user changing
-    :return: render a html with changed form
-    """
     if request.method == 'GET':
         return render(request, 'MS/change.html', {'type': type})
     else:
@@ -823,18 +812,18 @@ def find_time(request):
         temp = [item.start, item.end]
         result.append(temp)
     length_r = len(result)
-    response_data=[]
+    response_data = []
 
 
     for i in range(length_r+1):
-        if i==0:
+        if i == 0:
             if start >= res[i].start:
                 continue
             else:
-               res_start = start
-               res_end = res[i].start
+                res_start = start
+                res_end = res[i].start
 
-        elif i==length_r:
+        elif i == length_r:
             if end <= res[i-1].end:
                 continue
             else:
@@ -843,7 +832,7 @@ def find_time(request):
         else:
             res_start = res[i-1].end
             res_end = res[i].start
-        response_data.append([res_start.isoformat(),res_end.isoformat()])
+        response_data.append([res_start.isoformat(), res_end.isoformat()])
     data = {'slots': response_data}
     return JsonResponse(data, safe=False)
 
@@ -891,7 +880,8 @@ def groupcalendar(request):
 
 def api_group(request):
     """
-    :param request: request to connect to the api that enables to generate the json for all group members
+    :param request: request to connect to the api that enables to generate
+    :the json for all group members
     :return: render a JsonResponse
     """
     start = request.GET.get('start')
