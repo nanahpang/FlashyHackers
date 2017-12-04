@@ -12,7 +12,9 @@ This repo is the final project of team FlashyHackers in COMSW4156 (Advanced Soft
 
 ## Requirement
 
-* Django >= 1.10
+* (Use virtualenv for python3 will be easier to use and manage)
+
+* Django == 1.10
 
       pip install django
       
@@ -27,7 +29,9 @@ This repo is the final project of team FlashyHackers in COMSW4156 (Advanced Soft
 * MySQL 
     
     Download from [MySQL Website](https://www.mysql.com/downloads/).
-    
+
+* (You can use pip3 install -r requirements.txt to install all the dependencies)
+
 ## Setup:
 
 * Use MySQL create database:
@@ -49,6 +53,9 @@ This repo is the final project of team FlashyHackers in COMSW4156 (Advanced Soft
 * Configure the database: 
                     
       python manage.py migrate
+
+* patch the schedule package
+      ./patch_script
 
 ## Running:
 * Open your command line, and go to the root directory

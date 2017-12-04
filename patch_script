@@ -1,0 +1,2 @@
+#!/bin/sh
+cp patch/widgets.py /home/travis/virtualenv/python3.5.3/lib/python3.5/site-packages/bootstrap3_datetime/widgets.py
