@@ -540,6 +540,11 @@ def accept_meeting(request):
         ##add event
         start_time = convert(start_time)
         end_time = convert(end_time)
+        if settings.USE_TZ:
+        # If USE_TZ is True, make start and end dates aware in UTC timezone
+            utc = pytz.UTC
+            start_time = utc.localize(start_time)
+            end_time = utc.localize(end_time)
         event = Event(title=title, description=description, start=start_time, end=end_time)
         user = User.objects.get(username=username)
         calendar = Calendar.objects.get(slug=username)
