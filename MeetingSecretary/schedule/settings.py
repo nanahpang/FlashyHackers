@@ -58,3 +58,4 @@ USE_FULLCALENDAR = get_config('USE_FULLCALENDAR', False)
 # This name is used when a new event is created through selecting in fullcalendar
 EVENT_NAME_PLACEHOLDER = get_config('EVENT_NAME_PLACEHOLDER', 'Event Name')
 USE_TZ = True
+TIME_ZONE = 'UTC'
