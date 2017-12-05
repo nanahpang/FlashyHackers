@@ -13,26 +13,19 @@
 <div class="row">
     <div class="col-lg-6">
         <h3>As Admin</h3>
-        <ol id="admin"></ol>
-
-        <form id = "deletegroup" method = "POST">
-            {% csrf_token %}
-        <input type="text" id = "deletegroupname">
-        <input type="submit" value = "delete a group">
-        </form>
+        <div class="row" id = "admin-groups"></div>
     </div>
 
     <div class="col-lg-6">
-
         <h3>As Member</h3>
-        <ol id='member_groups'></ol>
+        <div class="row" id = "member-groups"></div>        
     </div>
 </div>
 
 
 <script>
-    function opennew(groupname) {		
-	    window.location = '/groups/' + groupname;
+    function opennew(name) {	
+	    window.location = '/groups/' + name;
 	}
 
     function groupcalendar(groupname) {
@@ -53,25 +46,90 @@
         var admin_count = data['admin'].length;
         var admin = data['admin'];
         for (var i = 0; i < admin_count; ++i) {
-          $("#admin").append("<li>" + admin[i]+ "</li>");
-          $("#admin").append("<button type='button'" + " class='button-right' onclick = opennew('" + admin[i] + "')" + ">view</button>"); 
-          $("#admin").append("<button type='button'" + "onclick = groupcalendar('" + admin[i] + "')" + ">view group calendar</button>");       
+            var card = document.createElement('div');
+            card.setAttribute("class","card");
+            card.setAttribute("style","widte: 15rem;");
+
+            var card_body = document.createElement('div');
+            card_body.setAttribute("class", "card-body");
+
+            var group_name = document.createElement('p');
+            group_name.setAttribute("class","card-title");
+            group_name.innerHTML = admin[i];
+            var view_group = document.createElement('button');
+            view_group.setAttribute("class","btn btn-outline-primary");
+            view_group.setAttribute("id", admin[i]);
+            view_group.onclick = function() {
+                opennew(this.id);
+            };
+            view_group.innerHTML="View";
+            var nextline = document.createElement('br');
+            var view_calendar = document.createElement('button');
+            view_calendar.setAttribute("class", "btn btn-outline-primary");
+            view_calendar.setAttribute("id", admin[i]);
+            view_calendar.onclick = function() {
+                groupcalendar(this.id);
+            }
+            view_calendar.innerHTML = "View Group Calendar";
+            
+            var delete_group = document.createElement('button');
+            delete_group.setAttribute("class", "btn btn-outline-primary");
+            delete_group.setAttribute("id", admin[i]);
+            delete_group.onclick = function() {
+                deletegroup(this.id);
+            }
+            delete_group.innerHTML = "Delete";
+
+            card_body.appendChild(group_name);
+            card_body.appendChild(view_group);
+            card_body.appendChild(delete_group);
+            card_body.appendChild(nextline);
+            card_body.appendChild(view_calendar);
+            card.appendChild(card_body);
+            $("#admin-groups").append(card);
         }
         var member_count = data['member'].length;
-
         var member = data['member'];
         for (var i = 0; i < member_count; ++i) {
-          $("#member_groups").append("<li>" + member[i]+ "</li>");
-          $("#member_groups").append("<button type='button'" + "onclick = opennew('" + member[i] + "')" + ">view</button></td></li>");      
-        }
+            var card = document.createElement('div');
+            card.setAttribute("class","card");
+            card.setAttribute("style","widte: 15rem;");
+
+            var card_body = document.createElement('div');
+            card_body.setAttribute("class", "card-body");
+
+            var group_name = document.createElement('p');
+            group_name.setAttribute("class","card-title");
+            group_name.innerHTML = member[i];
+            var view_group = document.createElement('button');
+            view_group.setAttribute("class","btn btn-outline-primary");
+            view_group.setAttribute("id",member[i]);
+            view_group.onclick = function() {
+                opennew(this.id);
+            };
+            view_group.innerHTML="View";
+
+            var nextline = document.createElement('br');
+            var view_calendar = document.createElement('button');
+            view_calendar.setAttribute("class", "btn btn-outline-primary");
+            view_calendar.setAttribute("id", member[i]);
+            view_calendar.onclick = function() {
+                groupcalendar(this.id);
+            }
+            view_calendar.innerHTML = "View Group Calendar";
+
+            card_body.appendChild(group_name);
+            card_body.appendChild(view_group);
+            card_body.appendChild(nextline);
+            card_body.appendChild(view_calendar);
+            card.appendChild(card_body);
+            $("#member-groups").append(card);
+       }
       }
     });
-
-    $("#deletegroup").submit(function(event){
-			event.preventDefault();
-      var groupid = document.getElementById('deletegroupname').value;
-      //alert(groupid);
-      var operationuser = '{{ user.username }}'
+  });
+function deletegroup(groupid) {
+    var operationuser = '{{ user.username }}'
 			$.ajax({
 				type: "POST",
 				url: "/ajax/deletegroup/",
@@ -79,18 +137,17 @@
 				dataType:'json',
 				success:function(data){
                     if(data['valid'] == 'true') {
-                        alert("Group "+ groupid + " has been removed!");
-                        window.location.reload();
+                       window.location.reload();
                     }
-                    else if (data['valid'] == 'false-noright') 
+                    else if (data['valid'] == 'false-noright') {
                         alert("You have no authorization to delete this group.");
+                    }                        
                     else
                         alert("The group doesn't exist.");
 				}
 			});
-		});
+}
 
-  });
 </script>
 
 {% endblock %}

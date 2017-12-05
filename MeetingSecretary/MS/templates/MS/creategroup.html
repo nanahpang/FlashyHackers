@@ -9,16 +9,19 @@
   <h2 class="text-lg text-uppercase my-0">
     <strong>Create a Group</strong>
   </h2>
+
 <hr class="divider" align="left">
+<h3>Group Administrator</h3>
+Username:       {{user.username}} <br>
+First name: {{user.first_name}} <br>
+Last name:  {{user.last_name}} <br>
+Email:      {{user.email}} <br> 
+<br>
 <form id = "" method="POST">
 	{% csrf_token %}
-<h3>Group Administrator</h3>
-name:       {{user.username}} <br>
-first name: {{user.first_name}} <br>
-last name:  {{user.last_name}} <br>
-email:      {{user.email}} <br> 
+<p>Please Input your group name here: </p>
 {{form.as_p}}
-<button type="submit">Create!</button>
+<button class= "btn btn-primary" type="submit">Create!</button>
 </form>
 {% endif %}
 {% endblock %}

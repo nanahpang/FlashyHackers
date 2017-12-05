@@ -9,17 +9,15 @@
     <strong>My Profile</strong>
   </h2>
 <hr class="divider" align="left">
-<strong>name:</strong>       {{user.username}} <br>
-<strong>first name:</strong> {{user.first_name}} <br>
-<strong>last name:</strong>  {{user.last_name}} <br>
-<strong>email:</strong>      {{user.email}} <br>
+<strong>Name:</strong>       {{user.username}} <br>
+<strong>First name:</strong> {{user.first_name}} <br>
+<strong>Last name:</strong>  {{user.last_name}} <br>
+<strong>Email:</strong>      {{user.email}} <br>
 <br>
-<a href="/change/password/">change password</a><br>
-<a href="/change/information/">change information</a><br>
+<button class="btn btn-info" onclick = "{location.href='/change/password/'}">Change password</button>
+<button class="btn btn-info" onclick = "{location.href='/change/information/'}">Change information</button>
 <br>
 {% endblock %}
 
 {% block footer%}
-
-<a href="{% url 'home' %}">home</a>
 {% endblock %}

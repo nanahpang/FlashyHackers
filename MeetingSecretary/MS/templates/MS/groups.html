@@ -20,18 +20,32 @@
 			</ol>
 
             <!-- Only the admin could see the functionalities like delete member -->
-            {% if is_admin == 1 %}
-			Add a new member: <form id = "addnewmember" method = "POST">
-				
-                {% csrf_token %}
-			<input type="text" id = "newmembername">
-			<input type="submit" value = "send invitation">
-			</form>
-			<form id = "deletemember" method = "POST">
-				{% csrf_token %}
-			<input type="text" id = "deletename">
-			<input type="submit" value = "delete a member">
-			</form>   
+			{% if is_admin == 1 %}
+			
+			<form class="form-inline" id="addnewmember" method="POST">
+					<div class="form-group">
+					  <label for="staticNewMember" class="sr-only">AddNew</label>
+					  <input type="text" readonly class="form-control-plaintext" id="staticNewMember" value="Add a new member:">
+					</div>
+					<div class="form-group mx-sm-3">
+					  <label for="newmembername" class="sr-only">NewName</label>
+					  <input class="form-control" id="newmembername" placeholder="Name">
+					</div>
+					<button type="submit" class="btn btn-primary">Send invitation</button>
+				  </form>
+				  <br>
+				  <form class="form-inline" id= "deletemember" method = "POST">
+						<div class="form-group">
+						  <label for="staticDelMember" class="sr-only">DelMem</label>
+						  <input type="text" readonly class="form-control-plaintext" id="staticDelMember" value="Delete a member:">
+						</div>
+						<div class="form-group mx-sm-3">
+						  <label for="newmembername" class="sr-only">DelName</label>
+						  <input class="form-control" id="deletename" placeholder="Name">
+						</div>
+						<button type="submit" class="btn btn-primary">Delete</button>
+					  </form> 
+				<br>
 			<form  id="searchtime">
 				<div class="form-row align-items-center">
 					<div class="col-auto">
