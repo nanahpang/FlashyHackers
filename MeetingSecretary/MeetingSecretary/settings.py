@@ -53,6 +53,7 @@ JENKINS_TASKS = [
 
 PROJECT_APPS = [
     'MS',
+    'MeetingSecretary',
 ]
 INSTALLED_APPS += PROJECT_APPS
 STATICFILES_FINDERS = [
@@ -103,7 +104,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'MeetingSecretary.wsgi.application'
 
-
+# [START dbconfig]
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
@@ -111,13 +112,17 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'MeetingSecretary',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
+        'USER': 'streammy',
+        'PASSWORD': '123456',
+        'PORT': 3308,
     }
 }
-
+DATABASES['default']['HOST'] = '/cloudsql/meeting-secretary-188318:us-east4:meeting-secretary'
+if os.getenv('GAE_INSTANCE'):
+    pass
+else:
+    DATABASES['default']['HOST'] = '127.0.0.1'
+# [END dbconfig]
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
