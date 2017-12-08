@@ -3,7 +3,7 @@
 This repo is the final project of team FlashyHackers in COMSW4156 (Advanced Software Engineering).
 
 ## Try online!
-![link](https://meeting-secretary-188318.appspot.com)
+[Meeting Secretary](https://meeting-secretary-188318.appspot.com)
 
 ## Technology
 
