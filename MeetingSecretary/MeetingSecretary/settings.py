@@ -111,9 +111,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'MeetingSecretary',
-        'USER': 'streammy',
-        'PASSWORD': '123456',
-        'PORT': 3308,
+        'USER': '',
+        'PASSWORD': '',
+        'PORT': '',
     }
 }
 DATABASES['default']['HOST'] = '/cloudsql/meeting-secretary-188318:us-east4:meeting-secretary'
