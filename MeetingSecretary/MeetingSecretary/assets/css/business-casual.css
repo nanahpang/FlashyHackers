@@ -157,6 +157,10 @@ hr.divider {
   background: none;
 }
 
+.button-right {
+    margin-right: 10px;
+}
+
 @media(min-width:768px) {
   #wrapper {
     padding-left: 0;

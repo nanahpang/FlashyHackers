@@ -1,0 +1,9 @@
+runtime: python
+env: flex
+entrypoint: gunicorn -b :$PORT MeetingSecretary.wsgi
+
+beta_settings:
+  cloud_sql_instances: meeting-secretary-188318:us-east4:meeting-secretary
+
+runtime_config:
+  python_version: 3

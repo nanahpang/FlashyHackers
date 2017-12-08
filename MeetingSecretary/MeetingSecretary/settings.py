@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'schedule',
     'project_sample',
     'djangobower',
-    'bootstrap3_datetime',
     'django_jenkins',
 ]
 
@@ -160,7 +159,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
-STATIC_URL = '/static/'
-
-
+#STATIC_URL = '/static/'
+STATIC_URL = 'https://storage.googleapis.com/meeting-secretary-188318/'
+if os.getenv('GAE_INSTANCE'):
+    pass
+else:
+    STATIC_URL = '/static/'
 LOGIN_REDIRECT_URL = 'home'
