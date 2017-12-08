@@ -39,6 +39,7 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/MS/models.py" />
+        <option value="$PROJECT_DIR$/MeetingSecretary/settings.py" />
       </list>
     </option>
   </component>
