@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'project_sample',
     'djangobower',
     'django_jenkins',
+    'django_nose',
 ]
 
 #for jenkins
@@ -60,6 +61,14 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'djangobower.finders.BowerFinder',
 
+]
+
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+NOSE_ARGS = [
+    '--with-coverage',
+    '--cover-package=MS',
+    '--cover-inclusive',
 ]
 
 STATIC_ROOT = os.path.join(PROJECT_PATH, 'assets')
@@ -110,9 +119,9 @@ WSGI_APPLICATION = 'MeetingSecretary.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'MeetingSecretary',
-        'USER': '',
-        'PASSWORD': '',
+        'NAME': 'MeetingSecretary3',
+        'USER': 'root',
+        'PASSWORD': 'baiweihua',
         'PORT': '',
     }
 }

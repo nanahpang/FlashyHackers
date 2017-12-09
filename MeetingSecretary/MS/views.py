@@ -658,6 +658,8 @@ def find_time(request):
         members.append(data_json)
     if not start or not end:
         raise ValueError('Start and end parameters are required')
+    #print("I am in api_group")
+    #print("start is ")
     # version 2 of full calendar
     if '-' in start:
         def convert(ddatetime):
@@ -817,10 +819,10 @@ def api_group(request):
     :the json for all group members
     :return: render a JsonResponse
     """
-    start = request.GET.get('start')
-    end = request.GET.get('end')
-    timezone = request.GET.get('timezone')
-    group_name = request.GET.get('group_name')
+    start = request.POST.get('start')
+    end = request.POST.get('end')
+    timezone = request.POST.get('timezone')
+    group_name = request.POST.get('group_name')
     data = Membership.objects.filter(group=group_name)
     results = []
     for item in data:
@@ -912,6 +914,7 @@ def _api_group(start, end, calendar_slug, timezone):
         event_list += calendar.events.filter(start__lte=end).filter(
             Q(end_recurring_period__gte=start) |
             Q(end_recurring_period__isnull=True))
+    print("I am in api_group")
     for event in event_list:
         occurrences = event.get_occurrences(start, end)
         for occurrence in occurrences:

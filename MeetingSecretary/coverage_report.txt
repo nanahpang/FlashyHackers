@@ -1,0 +1,29 @@
+Coverage report of our MS application:
+
+
+Name                                               Stmts   Miss  Cover
+----------------------------------------------------------------------
+MS/__init__.py                                         0      0   100%
+MS/admin.py                                            1      1     0%
+MS/apps.py                                             3      0   100%
+MS/forms.py                                           16      0   100%
+MS/messageHandler.py                                  53      4    92%
+MS/migrations/0001_initial.py                          8      0   100%
+MS/migrations/0002_auto_20171025_1743.py               8      0   100%
+MS/migrations/0003_auto_20171102_1132.py               5      0   100%
+MS/migrations/0004_auto_20171102_1450.py               5      0   100%
+MS/migrations/0005_auto_20171103_1742.py               7      0   100%
+MS/migrations/0006_message.py                          7      0   100%
+MS/migrations/0007_remove_message_messagetype.py       5      0   100%
+MS/migrations/0008_groupinvitation.py                  7      0   100%
+MS/migrations/0009_meeting.py                          6      0   100%
+MS/migrations/0010_meetinginvitation.py                7      0   100%
+MS/migrations/0011_meetingeventrelationship.py         6      0   100%
+MS/migrations/__init__.py                              0      0   100%
+MS/models.py                                          69     59    14%
+MS/urls.py                                             3      0   100%
+MS/views.py                                          628     68    89%
+----------------------------------------------------------------------
+TOTAL                                                844    132    84%
+
+

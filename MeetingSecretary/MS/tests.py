@@ -124,33 +124,33 @@ class GroupAndMeetingTest(TestCase):
         self.User1 = User.objects.create_user(username="User1", first_name="first1",
                                               last_name="last1", email="useremail1@server.com",
                                               password="password1")
-        calendar1 = Calendar(name="User1"+"_cal", slug="User1")
-        calendar1.save()
-        calendar1.create_relation(self.User1)
+        self.calendar1 = Calendar(name="User1"+"_cal", slug="User1")
+        self.calendar1.save()
+        self.calendar1.create_relation(self.User1)
 
         # User2: admin of Group1, Meeting1
         self.User2 = User.objects.create_user(username="User2", first_name="first2",
                                               last_name="last2", email="useremail2@server.com",
                                               password="password2")
-        calendar2 = Calendar(name="User2"+"_cal", slug="User2")
-        calendar2.save()
-        calendar2.create_relation(self.User2)
+        self.calendar2 = Calendar(name="User2"+"_cal", slug="User2")
+        self.calendar2.save()
+        self.calendar2.create_relation(self.User2)
 
         # User3, Not in any group or meeting
         self.User3 = User.objects.create_user(username="User3", first_name="first3",
                                               last_name="last3", email="useremail3@server.com",
                                               password="password3")
-        calendar3 = Calendar(name="User3"+"_cal", slug="User3")
-        calendar3.save()
-        calendar3.create_relation(self.User3)
+        self.calendar3 = Calendar(name="User3"+"_cal", slug="User3")
+        self.calendar3.save()
+        self.calendar3.create_relation(self.User3)
 
         # User4, In Group1, Meeting1
         self.User4 = User.objects.create_user(username="User4", first_name="first4",
                                               last_name="last3", email="useremail3@server.com",
                                               password="password3")
-        calendar4 = Calendar(name="User4"+"_cal", slug="User4")
-        calendar4.save()
-        calendar4.create_relation(self.User4)
+        self.calendar4 = Calendar(name="User4"+"_cal", slug="User4")
+        self.calendar4.save()
+        self.calendar4.create_relation(self.User4)
 
         self.Group1 = Group.objects.create(name="Group1", admin=self.User2)
         self.Membership12 = Membership.objects.create(group=self.Group1, member=self.User2)
@@ -163,13 +163,13 @@ class GroupAndMeetingTest(TestCase):
                                            end=self.convert('2017-12-05T00:00:00'),
                                            title=self.Meeting1.title,
                                            description=self.Meeting1.description,
-                                           creator=self.User2, calendar_id=calendar2.id)
+                                           creator=self.User2, calendar_id=self.calendar2.id)
 
         self.Event4 = Event.objects.create(start=self.convert('2017-12-04T00:00:00'),
                                            end=self.convert('2017-12-05T00:00:00'),
                                            title=self.Meeting1.title,
                                            description=self.Meeting1.description,
-                                           creator=self.User4, calendar_id=calendar4.id)
+                                           creator=self.User4, calendar_id=self.calendar4.id)
 
         self.MeetingEventRelationship12 = MeetingEventRelationship.objects.create    \
                                           (meeting=self.Meeting1, event=self.Event2)
@@ -208,7 +208,7 @@ class GroupAndMeetingTest(TestCase):
 
         #test newly created group is shown
         self.assertEqual(data["admin"], ["newgroup"])
-        self.assertEqual(data["member"], ["newgroup"])
+        self.assertEqual(data["member"], [])
         # notice! Haven't tested the meeting shown
 
     def test_delete_group(self):
@@ -440,3 +440,71 @@ class GroupAndMeetingTest(TestCase):
         self.assertEqual(len(meeting), 0)
         mer = MeetingEventRelationship.objects.filter(meeting=self.Meeting1)
         self.assertEqual(len(mer), 0)
+
+    def test_find_time(self):
+        login = self.client.login(username="User2", password="password2")
+        post1 = {"start_time": "2017-08-15", "end_time": "2017-08-16",
+                 "group_name": "Group1", "timezone": ""}
+        post2 = {"start_time": "2017-08-15", "end_time": "2017-08-16",
+                 "group_name": "Group1", "timezone": "UTC"}
+        # start_time: 2017-08-15
+        # end_time: 2017-12-07
+        post3 = {"start_time": "1502755200", "end_time": "1512604800",
+                 "group_name": "Group1", "timezone": ""}
+
+        testEvent = Event.objects.create(start=self.convert('2017-08-15T15:00:00'),
+                                           end=self.convert('2017-08-15T17:00:00'),
+                                           title='testtitle',
+                                           description='testdescription',
+                                           creator=self.User2, calendar_id=self.calendar2.id)
+        response = self.client.post(reverse("find_time"), post1)
+        data = response.content.decode("utf-8")
+        data = json.loads(data)
+        self.assertEqual("2017-08-15T00:00:00+00:00", data['slots'][0][0])
+        self.assertEqual("2017-08-15T15:00:00+00:00", data['slots'][0][1])
+        self.assertEqual("2017-08-15T17:00:00+00:00", data['slots'][1][0])
+        self.assertEqual("2017-08-16T00:00:00+00:00", data['slots'][1][1])
+
+
+        response = self.client.post(reverse("find_time"), post2)
+        data = response.content.decode("utf-8")
+        data = json.loads(data)
+        self.assertEqual("2017-08-15T00:00:00+00:00", data['slots'][0][0])
+        self.assertEqual("2017-08-15T15:00:00+00:00", data['slots'][0][1])
+        self.assertEqual("2017-08-15T17:00:00+00:00", data['slots'][1][0])
+        self.assertEqual("2017-08-16T00:00:00+00:00", data['slots'][1][1])
+
+        response = self.client.post(reverse("find_time"), post3)
+        data = response.content.decode("utf-8")
+        data = json.loads(data)
+        self.assertEqual("2017-08-15T00:00:00+00:00", data['slots'][0][0])
+        self.assertEqual("2017-08-15T15:00:00+00:00", data['slots'][0][1])
+        self.assertEqual("2017-08-15T17:00:00+00:00", data['slots'][1][0])
+        self.assertEqual("2017-12-04T00:00:00+00:00", data['slots'][1][1])
+        self.assertEqual("2017-12-05T00:00:00+00:00", data['slots'][2][0])
+        self.assertEqual("2017-12-07T00:00:00+00:00", data['slots'][2][1])
+
+    def test_api_group(self):
+        login = self.client.login(username="User2", password="password2")
+        post1 = {"start": "2017-03-15", "end": "2017-09-16",
+                 "group_name": "Group1", "timezone": ""}
+        testEvent1 = Event.objects.create(start=self.convert('2017-08-15T15:00:00'),
+                                           end=self.convert('2017-08-15T17:00:00'),
+                                           title='testtitle1',
+                                           description='testdescription1',
+                                           creator=self.User4, calendar_id=self.calendar4.id)
+
+        testEvent2 = Event.objects.create(start=self.convert('2017-08-15T05:00:00'),
+                                           end=self.convert('2017-08-15T07:00:00'),
+                                           title='testtitle2',
+                                           description='testdescription2',
+                                           creator=self.User2, calendar_id=self.calendar2.id)
+
+        response = self.client.post(reverse("api_group"), post1)
+        data = response.content.decode("utf-8")
+        data = json.loads(data)
+        self.assertEqual("2017-08-15T05:00:00Z", data[0]['start'])
+        self.assertEqual("2017-08-15T07:00:00Z", data[0]['end'])
+        self.assertEqual("2017-08-15T15:00:00Z", data[1]['start'])
+        self.assertEqual("2017-08-15T17:00:00Z", data[1]['end'])
+
