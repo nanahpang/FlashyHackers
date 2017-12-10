@@ -30,7 +30,8 @@ before_script:
 - mysql -e 'CREATE DATABASE MeetingSecretary;'  
 
 script:
-- python MeetingSecretary/manage.py test 
+- cd MeetingSecretary
+- python manage.py test --with-coverage
 
 services:
 - mysql
