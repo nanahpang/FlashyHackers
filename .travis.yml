@@ -22,7 +22,7 @@ before_install:
 - echo 'no before install'
 install:
 # Install the Python dependencies 
-- pip install -r requirements.txt
+- pip install -r MeetingSecretary/requirements.txt
 
 before_script:
 #before
