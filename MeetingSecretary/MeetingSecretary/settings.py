@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'project_sample',
     'djangobower',
     'django_jenkins',
+    'django_nose',
 ]
 
 #for jenkins
@@ -60,6 +61,14 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'djangobower.finders.BowerFinder',
 
+]
+
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+NOSE_ARGS = [
+    '--with-coverage',
+    '--cover-package=MS',
+    '--cover-inclusive',
 ]
 
 STATIC_ROOT = os.path.join(PROJECT_PATH, 'assets')
@@ -111,9 +120,15 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'MeetingSecretary',
+<<<<<<< HEAD
         'USER': 'streammy',
         'PASSWORD': '123456',
         'PORT': 3308,
+=======
+        'USER': 'root',
+        'PASSWORD': '',
+        'PORT': '',
+>>>>>>> 452ab405d1699caf69ccc48b07b99644bbfef148
     }
 }
 DATABASES['default']['HOST'] = '/cloudsql/meeting-secretary-188318:us-east4:meeting-secretary'

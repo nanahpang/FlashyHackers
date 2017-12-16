@@ -315,7 +315,7 @@ def api_group(request):
 def _api_group(start, end, calendar_slug, timezone):
 
     if not start or not end:
-        raise ValueError('Start and end parameters are required')
+        raise ValueError('Start and end parameters are required in schedule')
     # version 2 of full calendar
     # TODO: improve this code with date util package
     if '-' in start:

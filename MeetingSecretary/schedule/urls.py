@@ -94,7 +94,7 @@ urlpatterns = [
 
     # api urls
     url(r'^api/occurrences', api_occurrences, name='api_occurences'),
-    url(r'^api/groupcalendar', api_group, name='api_group'),
+    url(r'^api/groupcalendar', api_group, name='schedule_api_group'),
     url(r'^api/move_or_resize/$',
         api_move_or_resize_by_code,
         name='api_move_or_resize'),

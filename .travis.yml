@@ -22,7 +22,7 @@ before_install:
 - echo 'no before install'
 install:
 # Install the Python dependencies 
-- pip install -r requirements.txt
+- pip install -r MeetingSecretary/requirements.txt
 
 before_script:
 #before
@@ -30,7 +30,8 @@ before_script:
 - mysql -e 'CREATE DATABASE MeetingSecretary;'  
 
 script:
-- python MeetingSecretary/manage.py test 
+- cd MeetingSecretary
+- python manage.py test --with-coverage
 
 services:
 - mysql
