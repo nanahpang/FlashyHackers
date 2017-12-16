@@ -120,12 +120,12 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'MeetingSecretary',
-        'USER': 'root',
-        'PASSWORD': '123456',
+        'USER': '',
+        'PASSWORD': '',
         
     }
 }
-DATABASES['default']['HOST'] = '/cloudsql/meeting-secretary-188318:us-east4:meeting-secretary'
+DATABASES['default']['HOST'] = '/cloudsql/your cloud server'
 if os.getenv('GAE_INSTANCE'):
     pass
 else:
@@ -170,7 +170,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 #STATIC_URL = '/static/'
-STATIC_URL = 'https://storage.googleapis.com/meeting-secretary-188318/'
+STATIC_URL = 'https://storage.googleapis.com/your storage name/'
 if os.getenv('GAE_INSTANCE'):
     pass
 else:

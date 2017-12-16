@@ -1,1 +1,0 @@
-https://www.programcreek.com/python/example/50719/django.test.client.post
