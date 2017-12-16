@@ -111,9 +111,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'MeetingSecretary',
-        'USER': '',
-        'PASSWORD': '',
-        'PORT': '',
+        'USER': 'streammy',
+        'PASSWORD': '123456',
+        'PORT': 3308,
     }
 }
 DATABASES['default']['HOST'] = '/cloudsql/meeting-secretary-188318:us-east4:meeting-secretary'
@@ -121,6 +121,7 @@ if os.getenv('GAE_INSTANCE'):
     pass
 else:
     DATABASES['default']['HOST'] = '127.0.0.1'
+
 # [END dbconfig]
 
 # Password validation

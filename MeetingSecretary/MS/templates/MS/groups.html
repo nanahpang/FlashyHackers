@@ -68,9 +68,7 @@
 				<li class="list-group-item">Available Time:</li>
 			
 				</ul>
-				<div class="col-xs-3">
-					<button class="btn btn-primary" id="add-a-meeting" style="margin-top:5px" data-toggle="modal" data-target="#exampleModal" data-whatever="group_name">Add a meeting</button>
-			    </div>
+				
             {% endif %}
 			<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 				<div class="modal-dialog" role="document">
@@ -110,7 +108,9 @@
 			</div>
 		</div>
 		<div class="col-md" id = "meeting-cards">
-				
+			<div class="col-xs-3">
+				<button class="btn btn-primary" id="add-a-meeting" style="margin-top:5px" data-toggle="modal" data-target="#exampleModal" data-whatever="group_name">Add a meeting</button>
+			</div>	
 		</div>
 	</div>
 </div>
@@ -408,7 +408,7 @@ $(document).ready(function(){
                 data: {id, csrfmiddlewaretoken:'{{csrf_token}}'},
                 dataType: 'json',
                 success: function(data) {
-                    alert("delete meeting success!\nnotifications are on the way.");
+                    alert("Delete meeting success!\nNotifications are on the way.");
                     window.location.reload();
                 }
             });
