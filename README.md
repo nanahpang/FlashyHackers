@@ -72,6 +72,7 @@ https://trello.com/flashyhacker
 ## Other Documents: 
 
 Static analysis : pylint
+
 Continuous Integration & build tool: Travis CI
 
 All reports are stored in 'document' directory.
