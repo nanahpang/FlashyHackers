@@ -120,15 +120,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'MeetingSecretary',
-<<<<<<< HEAD
-        'USER': 'streammy',
-        'PASSWORD': '123456',
-        'PORT': 3308,
-=======
         'USER': 'root',
-        'PASSWORD': '',
-        'PORT': '',
->>>>>>> 452ab405d1699caf69ccc48b07b99644bbfef148
+        'PASSWORD': '123456',
+        
     }
 }
 DATABASES['default']['HOST'] = '/cloudsql/meeting-secretary-188318:us-east4:meeting-secretary'
