@@ -8,10 +8,11 @@ Here is our [Meeting Secretary](https://meeting-secretary-188318.appspot.com).
 ## Technology
 
 * Python3
-* Django == 1.10
+* Django
 * jQuery
 * Javascript
 * MySQL
+* Bootstrap
 
 ## Requirement
 
@@ -20,20 +21,11 @@ Here is our [Meeting Secretary](https://meeting-secretary-188318.appspot.com).
 * Django == 1.10
 
       pip install django
-      
-* Some packages:
-
-      pip install simplejson
-      pip install django-scheduler
-      pip install django-bower
-      pip install django-directmessages
-      pip install django-bootstrap3-datetimepicker
-      pip install django_jenkins
 * MySQL 
     
     Download from [MySQL Website](https://www.mysql.com/downloads/).
 
-* (You can use pip3 install -r requirements.txt to install all the dependencies)
+* You can use pip3 install -r requirements.txt to install all the dependencies.
 
 ## Setup:
 
@@ -70,3 +62,10 @@ Here is our [Meeting Secretary](https://meeting-secretary-188318.appspot.com).
 ## Project Iteration:
 
 https://trello.com/flashyhacker
+
+## Other Documents: 
+
+Static analysis : pylint
+Continuous Integration & build tool: Travis CI
+
+All reports are stored in 'document' directory.
